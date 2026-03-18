@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的图片站</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { max-width: 1200px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        /* 导航栏样式升级，增加管理后台入口 */
+        .nav { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav a { text-decoration: none; color: #333; margin-right: 20px; font-size: 16px; }
+        .nav a:hover { color: #0070f3; }
+        /* 新增搜索框样式 */
+        .search-box { margin-bottom: 20px; }
+        .search-box input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        /* 子分类按钮样式 */
+        .sub-category { margin: 10px 0 15px; }
+        .sub-category button { padding: 8px 15px; margin-right: 10px; border: none; border-radius: 20px; background: #fff; cursor: pointer; }
+        .sub-category button.active { background: #0070f3; color: #fff; }
+        /* 原有样式保留 */
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .gallery-item { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .gallery-item img { width: 100%; height: 200px; object-fit: cover; }
+        .gallery-item p { padding: 10px; text-align: center; color: #666; }
+        .category-title { margin: 30px 0 15px; border-left: 4px solid #0070f3; padding-left: 10px; }
+        /* 隐藏元素样式（筛选用） */
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="#wallpaper">高清壁纸</a>
+        <a href="#avatar">个性头像</a>
+        <!-- 新增CMS管理后台入口 -->
+        <a href="/admin" target="_blank">管理后台</a>
+    </div>
+
+    <!-- 新增搜索框 -->
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索图片标题...">
+    </div>
+
+    <h2 class="category-title" id="wallpaper">高清壁纸</h2>
+    <!-- 新增壁纸子分类 -->
+    <div class="sub-category">
+        <button class="sub-btn active" data-category="all">全部</button>
+        <button class="sub-btn" data-category="自然风景">自然风景</button>
+        <button class="sub-btn" data-category="动漫">动漫</button>
+        <button class="sub-btn" data-category="城市夜景">城市夜景</button>
+    </div>
+    <!-- 壁纸容器（CMS自动加载图片） -->
+    <div class="gallery" id="wallpaper-gallery">
+        <!-- 保留原有示例图片（CMS上传后会自动追加） -->
+        <div class="gallery-item" data-category="自然风景">
+            <img src="https://pub-80363a53e38c4f3f94a73aa62ad7a7f4.r2.dev/%E5%9B%BE%E7%89%87/32c91d3eb711679763a68979a6bb1817_500_random%3D1773687710718.jpg" loading="lazy" alt="壁纸1">
+            <p>4K风景壁纸</p>
+        </div>
+    </div>
+
+    <h2 class="category-title" id="avatar">个性头像</h2>
+    <!-- 新增头像子分类 -->
+    <div class="sub-category">
+        <button class="sub-btn active" data-category="all">全部</button>
+        <button class="sub-btn" data-category="卡通">卡通</button>
+        <button class="sub-btn" data-category="写实">写实</button>
+        <button class="sub-btn" data-category="氛围感">氛围感</button>
+    </div>
+    <!-- 头像容器（CMS自动加载图片） -->
+    <div class="gallery" id="avatar-gallery">
+        <!-- 保留原有示例图片（CMS上传后会自动追加） -->
+        <div class="gallery-item" data-category="卡通">
+            <img src="https://pub-80363a53e38c4f3f94a73aa62ad7a7f4.r2.dev/%E5%9B%BE%E7%89%87/5c9c50a09e3452172c75ddebb737a828_500_random%3D1773687653686.jpg" loading="lazy" alt="头像1">
+            <p>卡通头像</p>
+        </div>
+    </div>
+
+    <script>
+        // 1. 原有图片错误处理保留
+        document.addEventListener('DOMContentLoaded', function() {
+            const images = document.querySelectorAll('img');
+            images.forEach(img => {
+                img.onerror = function() { this.src = "https://picsum.photos/280/200"; }
+            });
+        });
+
+        // 2. 新增：自动加载CMS上传的图片（核心逻辑）
+        async function loadCMSImages() {
+            // 加载壁纸分类（CMS上传的图片）
+            try {
+                const wallpaperFiles = await fetch('_wallpaper')
+                    .then(res => res.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        return Array.from(doc.querySelectorAll('a[href$=".md"]')).map(a => a.href);
+                    });
+                
+                for (const file of wallpaperFiles) {
+                    const data = await fetch(file).then(res => res.text());
+                    const title = data.match(/title: (.*)/)[1];
+                    const category = data.match(/category: (.*)/)[1];
+                    const image = data.match(/image: (.*)/)[1];
+                    
+                    // 生成图片元素并添加到页面
+                    const item = document.createElement('div');
+                    item.className = 'gallery-item';
+                    item.dataset.category = category;
+                    item.innerHTML = `<img src="${image}" loading="lazy" alt="${title}"><p>${title}</p>`;
+                    document.getElementById('wallpaper-gallery').appendChild(item);
+                }
+            } catch (e) { console.log('暂无CMS壁纸数据:', e); }
+
+            // 加载头像分类（CMS上传的图片）
+            try {
+                const avatarFiles = await fetch('_avatar')
+                    .then(res => res.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        return Array.from(doc.querySelectorAll('a[href$=".md"]')).map(a => a.href);
+                    });
+                
+                for (const file of avatarFiles) {
+                    const data = await fetch(file).then(res => res.text());
+                    const title = data.match(/title: (.*)/)[1];
+                    const category = data.match(/category: (.*)/)[1];
+                    const image = data.match(/image: (.*)/)[1];
+                    
+                    // 生成图片元素并添加到页面
+                    const item = document.createElement('div');
+                    item.className = 'gallery-item';
+                    item.dataset.category = category;
+                    item.innerHTML = `<img src="${image}" loading="lazy" alt="${title}"><p>${title}</p>`;
+                    document.getElementById('avatar-gallery').appendChild(item);
+                }
+            } catch (e) { console.log('暂无CMS头像数据:', e); }
+        }
+
+        // 3. 新增：子分类切换功能
+        document.querySelectorAll('.sub-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.parentElement.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const category = this.dataset.category;
+                const gallery = this.parentElement.nextElementSibling;
+                const items = gallery.querySelectorAll('.gallery-item');
+                
+                items.forEach(item => {
+                    if (category === 'all' || item.dataset.category === category) {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+            });
+        });
+
+        // 4. 新增：搜索功能
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const keyword = this.value.toLowerCase();
+            document.querySelectorAll('.gallery-item').forEach(item => {
+                const title = item.querySelector('p').textContent.toLowerCase();
+                item.classList.toggle('hidden', !title.includes(keyword));
+            });
+        });
+
+        // 5. 引入Netlify CMS（必须）
+        const cmsScript = document.createElement('script');
+        cmsScript.src = 'https://unpkg.com/netlify-cms@^2.0.0/dist/netlify-cms.js';
+        document.body.appendChild(cmsScript);
+
+        // 页面加载时自动加载CMS图片
+        window.onload = loadCMSImages;
+    </script>
+</body>
+</html>
