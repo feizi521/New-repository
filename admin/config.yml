@@ -1,17 +1,24 @@
+# Decap CMS 配置（替代Netlify CMS，解决404）
 backend:
   name: github
-  repo: feizi521/New-repository
+  repo: feizi521/New-repository  # 你的GitHub仓库
   branch: main
+  auth_type: implicit  # 关键：直接GitHub授权，不依赖Netlify服务器
+  app_id: ""  # 留空即可，无需创建GitHub App
 
+# 对接你的R2存储桶（上传图片用）
 media_folder: "uploads"
 public_folder: "/"
 media_library:
-  name: cloudinary
+  name: aws-s3
   config:
-    cloud_name: "demo"
-    api_key: "874837483274837"
-    default_transformations: [{quality: "auto"}]
+    accessKeyId: "9485bdd703c7634e467289d947adf4e2"  # 你的R2 Access Key
+    secretAccessKey: "08cb9b677e147d410d8c0b173ecc308eed53035f2f6c21094fdafc5643742820"  # 你的R2 Secret Key
+    region: "auto"
+    bucket: "tupianku"  # 你的R2存储桶名
+    endpoint: "https://b11e99da154e0e4262f5eabd4c118b2d.r2.cloudflarestorage.com"  # 你的R2 Endpoint
 
+# 分类配置（高清壁纸+个性头像）
 collections:
   - name: "wallpaper"
     label: "高清壁纸"
