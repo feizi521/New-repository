@@ -2,7 +2,6 @@ backend:
   name: github
   repo: feizi521/New-repository
   branch: main
-  site_domain: tuji.farholme.com
 
 media_folder: "uploads"
 public_folder: "/"
