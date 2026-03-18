@@ -3,9 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Netlify CMS</title>
+  <title>Decap CMS 管理后台</title>
+  <!-- 第一步：先引入 S3 媒体库插件（必须在 Decap CMS 之前） -->
+  <script src="https://unpkg.com/decap-cms-media-library-s3@^1.0.0/dist/decap-cms-media-library-s3.js"></script>
+  <!-- 第二步：引入 Decap CMS 主脚本（替代 Netlify CMS） -->
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 </head>
 <body>
-  <script src="https://unpkg.com/netlify-cms@^2.0.0/dist/netlify-cms.js"></script>
+  <!-- CMS 会自动挂载到 body 上，无需额外代码 -->
 </body>
 </html>
