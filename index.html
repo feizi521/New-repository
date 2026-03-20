@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的图片站</title> <!-- 版本号：202603191300 -->
+  <script>
+    // 自动跳转到HTTPS
+    if (window.location.protocol === 'http:') {
+      window.location.href = window.location.href.replace('http:', 'https:');
+    }
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f9fafb;
+    }
+    .nav {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .nav button {
+      padding: 8px 16px;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .nav button.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+    .search {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+    .category {
+      margin-bottom: 30px;
+    }
+    .category h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: #111827;
+      border-left: 4px solid #2563eb;
+      padding-left: 10px;
+    }
+    .sub-categories {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .sub-categories button {
+      padding: 6px 12px;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .sub-categories button.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    .card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+    .card .title {
+      padding: 10px;
+      text-align: center;
+      font-size: 14px;
+      color: #374151;
+    }
+    .site-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 15px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    .site-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    .fox-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: white;
+      padding: 5px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      color: #6b7280;
+    }
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e5e7eb;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 10px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    .pagination button {
+      padding: 8px 16px;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .pagination button:hover:not(:disabled) {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .pagination button.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+    .pagination-info {
+      color: #6b7280;
+      font-size: 14px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      animation: fadeIn 0.3s;
+    }
+    .modal.show {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .modal-content {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: white;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    .modal-close:hover {
+      color: #2563eb;
+    }
+    
+    .modal-prev, .modal-next {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: white;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      background-color: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      border-radius: 50%;
+      z-index: 1002;
+    }
+    
+    .modal-prev {
+      left: 20px;
+    }
+    
+    .modal-next {
+      right: 20px;
+    }
+    
+    .modal-prev:hover, .modal-next:hover {
+      background-color: rgba(0, 0, 0, 0.6);
+    }
+    
+    .modal-title {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-size: 18px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px 20px;
+      border-radius: 20px;
+    }
+    
+    /* 手机端自适应 */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      .site-header {
+        padding: 10px 15px;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .site-title {
+        font-size: 18px;
+      }
+      .fox-icon {
+        width: 40px;
+        height: 40px;
+      }
+      .nav {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .nav button {
+        padding: 6px 12px;
+        font-size: 14px;
+      }
+      .search {
+        padding: 8px;
+        font-size: 14px;
+      }
+      .grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+      }
+      .card img {
+        height: 150px;
+      }
+      .card .title {
+        font-size: 12px;
+        padding: 8px;
+      }
+      .sub-categories {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .sub-categories button {
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+      .pagination {
+        flex-wrap: wrap;
+        gap: 5px;
+        padding: 10px;
+      }
+      .pagination button {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      .pagination-info {
+        font-size: 12px;
+        width: 100%;
+        text-align: center;
+      }
+      .modal-close {
+        top: 10px;
+        right: 15px;
+        font-size: 30px;
+      }
+      .modal-content {
+        max-width: 95%;
+        max-height: 85%;
+      }
+      .modal-title {
+        font-size: 14px;
+        padding: 8px 15px;
+        bottom: 10px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .site-title {
+        font-size: 16px;
+      }
+      .fox-icon {
+        width: 35px;
+        height: 35px;
+      }
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+      .card img {
+        height: 120px;
+      }
+      .card .title {
+        font-size: 11px;
+        padding: 6px;
+      }
+      .pagination {
+        gap: 3px;
+        padding: 8px;
+      }
+      .pagination button {
+        padding: 5px 8px;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="nav" id="nav">
+    <!-- 动态生成导航按钮 -->
+  </div>
+  <input type="text" class="search" placeholder="搜索图片标题..." oninput="filterImages()">
+  <div id="content"></div>
+  
+  <div id="imageModal" class="modal">
+    <span class="modal-close" onclick="closeModal()">&times;</span>
+    <span class="modal-prev" onclick="prevImage()">&lt;</span>
+    <span class="modal-next" onclick="nextImage()">&gt;</span>
+    <img class="modal-content" id="modalImage">
+    <div class="modal-title" id="modalTitle"></div>
+  </div>
+
+  <script>
+    // 图片数据
+    let imageData = {};
+    let currentType = 'wallpaper';
+    let currentSubCategory = '全部';
+    let currentPage = 1;
+    
+    // 分类名称映射表
+    let categoryNames = {
+      'wallpaper': '高清壁纸',
+      'avatar': '个性头像',
+      'people': '人物',
+      'scenery': '风景',
+      'wei-mei-zhi-yu': '唯美治愈',
+      'dong-man-cha-hua': '动漫插画',
+      'wen-zi-yu-lu': '文字语录',
+      'ying-shi-ming-xing': '影视明星',
+      'bei-jing-su-cai': '背景素材'
+    };
+    
+
+
+    // GitHub 仓库配置
+    const repoOwner = 'feizi521';
+    const repoName = 'New-repository';
+
+    // 从 GitHub API 加载图片数据
+    async function loadImagesFromMarkdown() {
+      // 调用新的加载函数
+      await loadAllCategories();
+    }
+
+    // 从 GitHub Pages 直接加载文件
+    async function fetchGitHubFiles(folder) {
+      try {
+        // 从 GitHub API 获取文件列表
+        const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folder}`;
+        
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          console.warn(`获取文件列表失败: ${response.status}，使用空列表`);
+          return [];
+        }
+        
+        const files = await response.json();
+        // 筛选出 Markdown 文件
+        const mdFiles = files
+          .filter(file => file.name.endsWith('.md'))
+          .map(file => ({
+            name: file.name,
+            download_url: file.download_url
+          }));
+        
+        console.log('获取到的文件列表:', mdFiles);
+        return mdFiles;
+      } catch (error) {
+        console.error('获取文件列表失败:', error);
+        return [];
+      }
+    }
+    
+    // 加载所有分类的图片
+    async function loadAllCategories() {
+      try {
+        console.log('开始加载所有分类的图片...');
+        
+        // 显示加载指示器
+        const content = document.getElementById('content');
+        content.innerHTML = `
+          <div class="loading">
+            <div class="loading-spinner"></div>
+            <span>正在加载图片...</span>
+          </div>
+        `;
+        
+        // 使用默认分类数据作为备用
+        const defaultCategories = {
+          wallpaper: '高清壁纸',
+          avatar: '个性头像',
+          people: '人物',
+          scenery: '风景',
+          'wei-mei-zhi-yu': '唯美治愈',
+          'dong-man-cha-hua': '动漫插画',
+          'wen-zi-yu-lu': '文字语录',
+          'ying-shi-ming-xing': '影视明星',
+          'bei-jing-su-cai': '背景素材'
+        };
+        
+        // 从 GitHub API 获取所有大分类（以 _ 开头的目录）
+        const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
+        
+        console.log('请求分类列表:', apiUrl);
+        
+        // 添加超时处理
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+        
+        try {
+          const response = await fetch(apiUrl, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          console.log('响应状态:', response.status);
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('获取分类列表失败:', response.status, errorText);
+            
+            // 如果是 API 速率限制，使用默认分类数据
+            if (response.status === 403 && errorText.includes('API rate limit exceeded')) {
+              console.log('API 速率限制，使用默认分类数据');
+              
+              // 使用默认分类数据
+              const categories = Object.keys(defaultCategories);
+              categoryNames = defaultCategories;
+              
+              // 初始化空的图片数据
+              categories.forEach(category => {
+                if (!imageData[category]) {
+                  imageData[category] = [];
+                }
+              });
+              
+              loadNavigation(categories);
+              content.innerHTML = '<p style="text-align: center; color: #6b7280;">API 速率限制，使用默认分类数据</p>';
+              return;
+            }
+            
+            throw new Error(`获取分类列表失败: ${response.status} - ${errorText}`);
+          }
+          
+          const contents = await response.json();
+          console.log('获取到的目录内容:', contents);
+          
+          // 筛选出以 _ 开头的目录
+          const categoryDirs = contents.filter(item => item.type === 'dir' && item.name.startsWith('_'));
+          console.log('筛选后的分类目录:', categoryDirs);
+          
+          // 加载每个分类的中文名称
+          const categories = [];
+          for (const dir of categoryDirs) {
+            const categoryKey = dir.name.substring(1); // 移除开头的 _
+            categories.push(categoryKey);
+            
+            // 尝试获取分类的中文名称
+            try {
+              const readmeUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${dir.path}/README.md`;
+              console.log('请求分类 README:', readmeUrl);
+              
+              // 添加超时处理
+              const readmeController = new AbortController();
+              const readmeTimeoutId = setTimeout(() => readmeController.abort(), 5000); // 5秒超时
+              
+              try {
+                const readmeResponse = await fetch(readmeUrl, { signal: readmeController.signal });
+                clearTimeout(readmeTimeoutId);
+                console.log('README 响应状态:', readmeResponse.status);
+                
+                if (readmeResponse.ok) {
+                  const readmeData = await readmeResponse.json();
+                  // 正确处理 base64 编码的中文内容
+                  const readmeContent = decodeURIComponent(escape(atob(readmeData.content)));
+                  // 提取 README.md 中的标题作为分类名称
+                  const titleMatch = readmeContent.match(/^#\s*(.*)$/m);
+                  if (titleMatch) {
+                    categoryNames[categoryKey] = titleMatch[1];
+                  } else {
+                    // 使用默认分类名称
+                    categoryNames[categoryKey] = defaultCategories[categoryKey] || categoryKey;
+                  }
+                } else {
+                  // 使用默认分类名称
+                  categoryNames[categoryKey] = defaultCategories[categoryKey] || categoryKey;
+                }
+              } catch (readmeError) {
+                if (readmeError.name === 'AbortError') {
+                  console.warn(`获取分类 ${categoryKey} 的名称超时`);
+                } else {
+                  console.warn(`获取分类 ${categoryKey} 的名称失败:`, readmeError);
+                }
+                // 使用默认分类名称
+                categoryNames[categoryKey] = defaultCategories[categoryKey] || categoryKey;
+              } finally {
+                clearTimeout(readmeTimeoutId);
+              }
+            } catch (e) {
+              console.warn(`获取分类 ${categoryKey} 的名称失败:`, e);
+              // 使用默认分类名称
+              categoryNames[categoryKey] = defaultCategories[categoryKey] || categoryKey;
+            }
+          }
+          
+          console.log('获取到的分类列表:', categories);
+          console.log('分类名称映射表:', categoryNames);
+          
+          // 并行加载所有分类
+          const loadPromises = categories.map(category => {
+            const folder = `_${category}`;
+            console.log(`加载分类: ${category}`);
+            
+            // 确保 imageData 中有对应的分类数组
+            if (!imageData[category]) {
+              imageData[category] = [];
+            }
+            
+            // 递归加载分类及其子分类
+            return loadCategoryWithSubcategories(category, folder);
+          });
+          
+          // 等待所有分类加载完成
+          await Promise.all(loadPromises);
+          
+          // 加载导航按钮
+          loadNavigation(categories);
+          
+          // 如果没有数据，显示空状态
+          if (Object.values(imageData).every(arr => arr.length === 0)) {
+            console.log('没有加载到图片数据，显示空状态');
+            content.innerHTML = '<p style="text-align: center; color: #6b7280;">暂无图片数据</p>';
+            return;
+          }
+          
+          render();
+        } catch (fetchError) {
+          clearTimeout(timeoutId);
+          
+          if (fetchError.name === 'AbortError') {
+            console.error('请求超时:', fetchError);
+            
+            // 使用默认分类数据
+            const categories = Object.keys(defaultCategories);
+            categoryNames = defaultCategories;
+            
+            // 初始化空的图片数据
+            categories.forEach(category => {
+              if (!imageData[category]) {
+                imageData[category] = [];
+              }
+            });
+            
+            loadNavigation(categories);
+            content.innerHTML = '<p style="text-align: center; color: #6b7280;">网络请求超时，使用默认分类数据</p>';
+            return;
+          } else {
+            console.error('请求失败:', fetchError);
+            
+            // 使用默认分类数据
+            const categories = Object.keys(defaultCategories);
+            categoryNames = defaultCategories;
+            
+            // 初始化空的图片数据
+            categories.forEach(category => {
+              if (!imageData[category]) {
+                imageData[category] = [];
+              }
+            });
+            
+            loadNavigation(categories);
+            content.innerHTML = '<p style="text-align: center; color: #6b7280;">加载失败，使用默认分类数据</p>';
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('加载图片数据失败:', error);
+        const content = document.getElementById('content');
+        
+        // 使用默认分类数据作为最后的备用
+        const defaultCategories = {
+          wallpaper: '高清壁纸',
+          avatar: '个性头像',
+          people: '人物',
+          scenery: '风景',
+          'wei-mei-zhi-yu': '唯美治愈',
+          'dong-man-cha-hua': '动漫插画',
+          'wen-zi-yu-lu': '文字语录',
+          'ying-shi-ming-xing': '影视明星',
+          'bei-jing-su-cai': '背景素材'
+        };
+        
+        const categories = Object.keys(defaultCategories);
+        categoryNames = defaultCategories;
+        
+        // 初始化空的图片数据
+        categories.forEach(category => {
+          if (!imageData[category]) {
+            imageData[category] = [];
+          }
+        });
+        
+        loadNavigation(categories);
+        content.innerHTML = '<p style="text-align: center; color: #6b7280;">加载失败，使用默认分类数据</p>';
+      }
+    }
+    
+    // 递归加载分类及其子分类
+    async function loadCategoryWithSubcategories(category, folder) {
+      try {
+        // 获取当前目录的内容
+        const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folder}`;
+        
+        // 添加超时处理
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8秒超时
+        
+        try {
+          const response = await fetch(apiUrl, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          
+          if (!response.ok) {
+            console.warn(`获取目录内容失败: ${response.status}`);
+            return;
+          }
+          
+          const contents = await response.json();
+          
+          // 分离文件和子目录
+          const files = contents.filter(item => item.type === 'file' && item.name.endsWith('.md'));
+          const subdirs = contents.filter(item => item.type === 'dir');
+          
+          // 并行加载所有文件
+          const filePromises = files.map(async (item) => {
+            try {
+              // 跳过 README.md 文件
+              if (item.name.toLowerCase() === 'readme.md') {
+                console.log('跳过 README.md 文件:', item.name);
+                return;
+              }
+              
+              console.log('加载文件:', item.name);
+              
+              // 添加超时处理
+              const fileController = new AbortController();
+              const fileTimeoutId = setTimeout(() => fileController.abort(), 5000); // 5秒超时
+              
+              try {
+                const mdContent = await fetch(item.download_url, { signal: fileController.signal }).then(r => r.text());
+                clearTimeout(fileTimeoutId);
+                const imageInfo = parseMarkdown(mdContent);
+                if (imageInfo) {
+                  imageData[category].push(imageInfo);
+                  console.log('成功解析图片:', imageInfo.title);
+                }
+              } catch (fileError) {
+                clearTimeout(fileTimeoutId);
+                if (fileError.name === 'AbortError') {
+                  console.warn(`加载文件 ${item.name} 超时`);
+                } else {
+                  console.error('加载文件失败:', item.name, fileError);
+                }
+              }
+            } catch (e) {
+              console.error('加载文件失败:', item.name, e);
+            }
+          });
+          
+          // 并行加载所有子目录
+          const dirPromises = subdirs.map(async (item) => {
+            console.log(`加载子分类: ${item.name}`);
+            await loadCategoryWithSubcategories(category, `${folder}/${item.name}`);
+          });
+          
+          // 等待所有文件和子目录加载完成
+          await Promise.all([...filePromises, ...dirPromises]);
+        } catch (fetchError) {
+          clearTimeout(timeoutId);
+          
+          if (fetchError.name === 'AbortError') {
+            console.warn(`获取目录 ${folder} 超时`);
+          } else {
+            console.error('加载分类失败:', fetchError);
+          }
+        }
+      } catch (error) {
+        console.error('加载分类失败:', error);
+      }
+    }
+
+    // 加载导航按钮
+    function loadNavigation(categories) {
+      const nav = document.getElementById('nav');
+      
+      nav.innerHTML = categories.map(category => {
+        // 根据分类类型显示对应的中文名称
+        let categoryName = categoryNames[category] || category;
+        
+        return `<button ${category === currentType ? 'class="active"' : ''} onclick="showCategory('${category}')">${categoryName}</button>`;
+      }).join('');
+    }
+
+    // 解析 Markdown 文件
+    function parseMarkdown(content) {
+      const yamlMatch = content.match(/---([\s\S]*?)---/);
+      if (yamlMatch) {
+        const yamlContent = yamlMatch[1].trim();
+        const lines = yamlContent.split('\n');
+        const imageInfo = {};
+        
+        lines.forEach(line => {
+          const colonIndex = line.indexOf(':');
+          if (colonIndex > 0) {
+            const key = line.substring(0, colonIndex).trim();
+            let value = line.substring(colonIndex + 1).trim();
+            // 移除引号
+            value = value.replace(/^["']|["']$/g, '');
+            imageInfo[key] = value;
+          }
+        });
+        
+        if (imageInfo.image) {
+          return {
+            title: imageInfo.title || '无标题',
+            category: imageInfo.category || '未分类',
+            image: imageInfo.image
+          };
+        }
+      }
+      return null;
+    }
+
+    // 渲染图片列表
+    function render() {
+      const content = document.getElementById('content');
+      const items = imageData[currentType] || [];
+      const subCategories = [...new Set(items.map(i => i.category))];
+      
+      // 根据分类类型显示对应的中文名称
+      let categoryName = categoryNames[currentType] || currentType;
+      
+      // 根据子分类和搜索关键词筛选图片
+      let filteredItems = items;
+      if (currentSubCategory !== '全部') {
+        filteredItems = items.filter(item => item.category === currentSubCategory);
+      }
+      
+      // 显示所有图片，不使用分页
+      const paginatedItems = filteredItems;
+      
+      let html = `
+        <div class="category">
+          <h2>${categoryName}</h2>
+          <div class="sub-categories">
+            <button class="active" onclick="filterSubCategory('全部')">全部</button>
+            ${subCategories.map(cat => `<button onclick="filterSubCategory('${cat}')">${cat}</button>`).join('')}
+          </div>
+          <div class="grid">
+            ${paginatedItems.map(item => `
+              <div class="card" data-category="${item.category}" data-title="${item.title}" onclick="openModal('${item.image}', '${item.title}', ${paginatedItems.indexOf(item)})">
+                <img src="${item.image}" alt="${item.title}">
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      content.innerHTML = html;
+    }
+
+    // 切换分类（壁纸/头像）
+    function showCategory(type) {
+      currentType = type;
+      currentSubCategory = '全部';
+      currentPage = 1; // 重置页码
+      document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      // 确保 imageData 中有对应的分类数组
+      if (!imageData[type]) {
+        imageData[type] = [];
+      }
+      render();
+    }
+
+
+
+    // 打开模态框查看大图
+    let currentImages = [];
+    let currentImageIndex = 0;
+    
+    function openModal(imageSrc, title, index) {
+      const modal = document.getElementById('imageModal');
+      const modalImage = document.getElementById('modalImage');
+      const modalTitle = document.getElementById('modalTitle');
+      
+      // 获取当前筛选后的图片列表
+      currentImages = imageData[currentType] || [];
+      if (currentSubCategory !== '全部') {
+        currentImages = currentImages.filter(item => item.category === currentSubCategory);
+      }
+      
+      // 获取搜索关键词
+      const search = document.querySelector('.search').value.toLowerCase();
+      if (search) {
+        currentImages = currentImages.filter(item => item.title.toLowerCase().includes(search));
+      }
+      
+      currentImageIndex = index;
+      
+      modalImage.src = imageSrc;
+      modalTitle.textContent = title;
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden'; // 禁止背景滚动
+    }
+    
+    // 切换到上一张图片
+    function prevImage() {
+      if (currentImages.length > 0) {
+        currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+        const prevImage = currentImages[currentImageIndex];
+        document.getElementById('modalImage').src = prevImage.image;
+        document.getElementById('modalTitle').textContent = prevImage.title;
+      }
+    }
+    
+    // 切换到下一张图片
+    function nextImage() {
+      if (currentImages.length > 0) {
+        currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+        const nextImage = currentImages[currentImageIndex];
+        document.getElementById('modalImage').src = nextImage.image;
+        document.getElementById('modalTitle').textContent = nextImage.title;
+      }
+    }
+
+    // 关闭模态框
+    function closeModal() {
+      const modal = document.getElementById('imageModal');
+      modal.classList.remove('show');
+      document.body.style.overflow = ''; // 恢复背景滚动
+    }
+
+    // 筛选子分类
+    function filterSubCategory(category) {
+      currentSubCategory = category;
+      currentPage = 1; // 重置页码
+      document.querySelectorAll('.sub-categories button').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      filterImages();
+    }
+
+    // 搜索筛选
+    function filterImages() {
+      const search = document.querySelector('.search').value.toLowerCase();
+      const items = imageData[currentType] || [];
+      
+      // 根据子分类和搜索关键词筛选图片
+      let filteredItems = items;
+      if (currentSubCategory !== '全部') {
+        filteredItems = items.filter(item => item.category === currentSubCategory);
+      }
+      
+      // 根据搜索关键词筛选
+      if (search) {
+        filteredItems = filteredItems.filter(item => item.title.toLowerCase().includes(search));
+      }
+      
+      // 重新渲染
+      render();
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      loadImagesFromMarkdown();
+      
+      // 点击模态框背景关闭
+      document.getElementById('imageModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeModal();
+        }
+      });
+
+      // ESC键关闭模态框
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeModal();
+        } else if (e.key === 'ArrowLeft') {
+          prevImage();
+        } else if (e.key === 'ArrowRight') {
+          nextImage();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

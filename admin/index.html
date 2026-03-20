@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片管理后台</title>
+  <script>
+    // 自动跳转到HTTPS
+    if (window.location.protocol === 'http:') {
+      window.location.href = window.location.href.replace('http:', 'https:');
+    }
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f9fafb;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: white;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+      width: 100%;
+    }
+    h1 {
+      font-size: 24px;
+      color: #111827;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    h2 {
+      font-size: 20px;
+      color: #111827;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    p {
+      color: #6b7280;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #111827;
+    }
+    button {
+      padding: 12px 24px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-right: 10px;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #1d4ed8;
+    }
+    button:disabled {
+      background-color: #9ca3af;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background-color: #6b7280;
+    }
+    .btn-secondary:hover {
+      background-color: #4b5563;
+    }
+    .btn-success {
+      background-color: #10b981;
+    }
+    .btn-success:hover {
+      background-color: #059669;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 6px;
+      display: none;
+    }
+    .success {
+      background-color: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .error {
+      background-color: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+    .info {
+      background-color: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+    pre {
+      background-color: #f3f4f6;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+    .file-list {
+      margin-top: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 10px;
+    }
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .file-item:last-child {
+      border-bottom: none;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background-color: #e5e7eb;
+      border-radius: 4px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background-color: #2563eb;
+      transition: width 0.3s ease;
+    }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 10px;
+    }
+    .tab {
+      padding: 8px 16px;
+      background: none;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .tab.active {
+      color: #2563eb;
+      border-bottom: 2px solid #2563eb;
+      margin-bottom: -12px;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .category-manager {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .category-list {
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .category-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .search-box {
+      margin-bottom: 20px;
+    }
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .image-item {
+      position: relative;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .image-item img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+    }
+    .image-item .info {
+      padding: 8px;
+      font-size: 12px;
+    }
+    .image-item .delete-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(220, 38, 38, 0.8);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .batch-upload-area {
+      border: 2px dashed #d1d5db;
+      border-radius: 8px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .batch-upload-area:hover {
+      border-color: #2563eb;
+      background-color: #eff6ff;
+    }
+    .batch-upload-area.dragover {
+      border-color: #2563eb;
+      background-color: #dbeafe;
+    }
+    .github-token-input {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #fef3c7;
+      border-radius: 6px;
+      border: 1px solid #fcd34d;
+    }
+    .login-container {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 登录页面 -->
+  <div id="login-page" class="container login-container">
+    <h1>🔒 图片管理后台</h1>
+    <p>请输入密码登录</p>
+    
+    <div class="form-group">
+      <label>密码</label>
+      <input type="password" id="loginPassword" placeholder="请输入密码">
+    </div>
+    
+    <button onclick="login()">登录</button>
+    <div class="result" id="loginResult"></div>
+  </div>
+
+  <!-- 管理后台 -->
+  <div id="admin-page" class="container" style="display: none;">
+    <button onclick="logout()" class="logout-btn btn-secondary">退出登录</button>
+    
+    <h1>🖼️ 图片管理后台</h1>
+    <p>批量上传图片并自动同步到前端</p>
+    
+    <!-- GitHub Token 配置 -->
+    <div class="github-token-input">
+      <label>GitHub Token（用于自动创建文件）</label>
+      <input type="password" id="githubToken" placeholder="输入你的GitHub Personal Access Token">
+      <small style="color: #92400e; display: block; margin-top: 5px;">
+        需要 repo 权限的 Token，<a href="https://github.com/settings/tokens" target="_blank">点击创建</a>
+      </small>
+    </div>
+
+    <!-- 标签页 -->
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('upload')">📤 批量上传</button>
+      <button class="tab" onclick="showTab('manage')">🗂️ 分类管理</button>
+      <button class="tab" onclick="showTab('images')">🖼️ 图片管理</button>
+    </div>
+
+    <!-- 批量上传 -->
+    <div id="upload-tab" class="tab-content active">
+      <div class="form-group">
+        <label>分类类型</label>
+        <select id="type" onchange="updateSubCategories()">
+          <!-- 动态生成选项 -->
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>子分类</label>
+        <select id="category">
+          <option value="自然风景">自然风景</option>
+          <option value="动漫">动漫</option>
+          <option value="城市夜景">城市夜景</option>
+          <option value="卡通">卡通</option>
+          <option value="写实">写实</option>
+
+        </select>
+      </div>
+
+      <div class="batch-upload-area" id="dropZone">
+        <p>📁 拖拽图片到此处，或点击选择文件</p>
+        <input type="file" id="batchFiles" multiple accept="image/*" style="display: none;">
+        <button onclick="document.getElementById('batchFiles').click()" style="margin-top: 10px;">选择文件</button>
+      </div>
+
+      <div id="fileList" class="file-list" style="display: none;"></div>
+
+      <div class="progress-bar" id="progressBar" style="display: none;">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+
+      <button onclick="batchUpload()" id="uploadBtn" disabled>开始批量上传</button>
+      <button onclick="clearFiles()" class="btn-secondary">清空列表</button>
+
+      <div class="result" id="uploadResult"></div>
+    </div>
+
+    <!-- 分类管理 -->
+    <div id="manage-tab" class="tab-content">
+      <div class="category-manager">
+        <!-- 添加大分类 -->
+        <div style="margin-bottom: 30px; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb;">
+          <h3>添加大分类</h3>
+          <div class="form-group">
+            <input type="text" id="newMainCategory" placeholder="输入大分类名称（如：高清壁纸、个性头像）">
+            <button onclick="addMainCategory()" style="margin-top: 10px;">添加大分类</button>
+          </div>
+          <small style="color: #6b7280; display: block; margin-top: 5px;">添加后将在上传页面和分类管理中显示</small>
+        </div>
+        
+        <!-- 高清壁纸分类 -->
+        <div>
+          <h3>高清壁纸分类</h3>
+          <div class="form-group">
+            <input type="text" id="newWallpaperCategory" placeholder="输入新分类名称">
+            <button onclick="addCategory('wallpaper')" style="margin-top: 10px;">添加分类</button>
+          </div>
+          <div class="category-list" id="wallpaperCategories"></div>
+        </div>
+        
+        <!-- 个性头像分类 -->
+        <div>
+          <h3>个性头像分类</h3>
+          <div class="form-group">
+            <input type="text" id="newAvatarCategory" placeholder="输入新分类名称">
+            <button onclick="addCategory('avatar')" style="margin-top: 10px;">添加分类</button>
+          </div>
+          <div class="category-list" id="avatarCategories"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 图片管理 -->
+    <div id="images-tab" class="tab-content">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索图片标题..." oninput="searchImages()">
+      </div>
+      <div class="form-group">
+        <label>筛选分类</label>
+        <select id="filterCategory" onchange="filterImages()">
+          <option value="">全部分类</option>
+        </select>
+      </div>
+      <div id="imageGrid" class="image-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    // 配置
+    const workerUrl = "https://tujikuayu.980257742.workers.dev/";
+    const repoOwner = "feizi521";
+    const repoName = "New-repository";
+    const PASSWORD = "feizi521"; // 密码
+    
+    // 分类数据
+    let categories = {
+      wallpaper: ["自然风景", "动漫", "城市夜景", "卡通", "写实", "4K", "竖屏", "全面屏", "护眼壁纸", "动态壁纸"],
+      avatar: ["卡通", "写实", "情侣头像", "动漫头像", "搞怪头像", "中性头像"],
+      people: ["美女", "帅哥", "亚洲美女", "欧美美女", "港风", "复古", "中性风"],
+      scenery: ["城市", "山丘", "夜景", "街道", "大海", "星空", "森林", "日出"],
+      'wei-mei-zhi-yu': ["小清新", "氛围感", "温柔风", "干净治愈", "ins 风"],
+      'dong-man-cha-hua': ["二次元", "古风插画", "Q 版", "赛博朋克", "唯美插画"],
+      'wen-zi-yu-lu': ["励志文案", "情感语录", "朋友圈背景", "短句壁纸"],
+      'ying-shi-ming-xing': ["明星壁纸", "爱豆头像", "影视剧照", "港风复古"],
+      'bei-jing-su-cai': ["纯色背景", "渐变背景", "简约底图", "直播 / PPT 背景", "纹理素材"]
+    };
+
+    // 大分类名称映射表
+    let categoryNames = {
+      wallpaper: "高清壁纸",
+      avatar: "个性头像",
+      people: "人物",
+      scenery: "风景",
+      'wei-mei-zhi-yu': "唯美治愈",
+      'dong-man-cha-hua': "动漫插画",
+      'wen-zi-yu-lu': "文字语录",
+      'ying-shi-ming-xing': "影视明星",
+      'bei-jing-su-cai': "背景素材"
+    };
+
+    // 待上传文件列表
+    let pendingFiles = [];
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      checkLogin();
+    });
+
+    // 检查登录状态
+    function checkLogin() {
+      // 不使用localStorage，直接显示登录页面
+      showLoginPage();
+    }
+
+    // 显示登录页面
+    function showLoginPage() {
+      document.getElementById('login-page').style.display = 'block';
+      document.getElementById('admin-page').style.display = 'none';
+    }
+
+    // 显示管理页面
+    function showAdminPage() {
+      document.getElementById('login-page').style.display = 'none';
+      document.getElementById('admin-page').style.display = 'block';
+      
+      loadCategories();
+      setupDragAndDrop();
+      loadImages();
+    }
+
+    // 登录
+    function login() {
+      const password = document.getElementById('loginPassword').value;
+      const result = document.getElementById('loginResult');
+      
+      if (password === PASSWORD) {
+        result.className = 'result success';
+        result.innerText = '✅ 登录成功！';
+        result.style.display = 'block';
+        
+        setTimeout(() => {
+          showAdminPage();
+        }, 1000);
+      } else {
+        result.className = 'result error';
+        result.innerText = '❌ 密码错误！';
+        result.style.display = 'block';
+      }
+    }
+
+    // 退出登录
+    function logout() {
+      showLoginPage();
+    }
+
+    // 标签页切换
+    function showTab(tabName) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(tabName + '-tab').classList.add('active');
+      
+      if (tabName === 'images') {
+        loadImages();
+      }
+    }
+
+    // 设置拖拽上传
+    function setupDragAndDrop() {
+      const dropZone = document.getElementById('dropZone');
+      const fileInput = document.getElementById('batchFiles');
+
+      dropZone.addEventListener('click', () => fileInput.click());
+      
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+      });
+
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+      });
+    }
+
+    // 处理文件
+    function handleFiles(files) {
+      for (let file of files) {
+        if (file.type.startsWith('image/')) {
+          pendingFiles.push({
+            file: file,
+            name: file.name,
+            status: 'pending'
+          });
+        }
+      }
+      updateFileList();
+    }
+
+    // 更新文件列表显示
+    function updateFileList() {
+      const fileList = document.getElementById('fileList');
+      const uploadBtn = document.getElementById('uploadBtn');
+      
+      if (pendingFiles.length === 0) {
+        fileList.style.display = 'none';
+        uploadBtn.disabled = true;
+        return;
+      }
+
+      fileList.style.display = 'block';
+      uploadBtn.disabled = false;
+
+      fileList.innerHTML = pendingFiles.map((item, index) => `
+        <div class="file-item">
+          <span>${item.name} ${item.status === 'uploading' ? '(上传中...)' : item.status === 'done' ? '✅' : item.status === 'error' ? '❌' : ''}</span>
+          <button onclick="removeFile(${index})" style="width: auto; padding: 4px 8px; font-size: 12px;">删除</button>
+        </div>
+      `).join('');
+    }
+
+    // 删除文件
+    function removeFile(index) {
+      pendingFiles.splice(index, 1);
+      updateFileList();
+    }
+
+    // 清空文件列表
+    function clearFiles() {
+      pendingFiles = [];
+      updateFileList();
+      document.getElementById('uploadResult').style.display = 'none';
+    }
+
+    // 批量上传
+    async function batchUpload() {
+      const token = document.getElementById('githubToken').value.trim();
+      const type = document.getElementById('type').value;
+      const category = document.getElementById('category').value;
+      const result = document.getElementById('uploadResult');
+      const progressBar = document.getElementById('progressBar');
+      const progressFill = document.getElementById('progressFill');
+      const uploadBtn = document.getElementById('uploadBtn');
+
+      if (!token) {
+        result.className = "result error";
+        result.innerText = "❌ 请先输入 GitHub Token！";
+        result.style.display = "block";
+        return;
+      }
+
+      if (pendingFiles.length === 0) {
+        result.className = "result error";
+        result.innerText = "❌ 请先选择图片文件！";
+        result.style.display = "block";
+        return;
+      }
+
+      uploadBtn.disabled = true;
+      progressBar.style.display = 'block';
+      result.className = "result info";
+      result.innerText = `正在上传 ${pendingFiles.length} 个文件...`;
+      result.style.display = "block";
+
+      let successCount = 0;
+      let failCount = 0;
+
+      for (let i = 0; i < pendingFiles.length; i++) {
+        const item = pendingFiles[i];
+        item.status = 'uploading';
+        updateFileList();
+
+        try {
+          // 1. 上传到 R2
+          // 生成安全的文件名，移除特殊字符，添加随机字符串确保唯一性
+          const randomStr = Math.random().toString(36).substring(2, 8);
+          const safeFileName = `${Date.now()}-${randomStr}-${item.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+          const uploadUrl = `${workerUrl}/${safeFileName}`;
+          
+          const uploadResponse = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': item.file.type },
+            body: item.file
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error(`R2上传失败: ${uploadResponse.status}`);
+          }
+
+          // 2. 生成图片链接（使用双斜杠格式）
+          let publicUrl = `https://tp.farholme.com//${safeFileName}`;
+          console.log('生成的图片 URL:', publicUrl);
+          
+          // 3. 提取文件名作为标题（去掉扩展名）
+          const title = item.name.replace(/\.[^/.]+$/, "");
+          
+          // 4. 创建 Markdown 文件内容
+          const mdContent = `---
+title: "${title}"
+category: "${category}"
+image: "${publicUrl}"
+---
+`;
+          
+          // 5. 创建文件名（使用时间戳避免冲突）
+          const mdFileName = `${Date.now()}-${title.toLowerCase().replace(/[^a-z0-9]/g, '-')}.md`;
+          
+          // 6. 调用 GitHub API 创建文件
+          const folder = `_${type}`;
+          const githubApiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folder}/${mdFileName}`;
+          
+          // Base64 编码（兼容性更好的方式）
+          const base64Content = btoa(unescape(encodeURIComponent(mdContent)));
+          
+          console.log('=== GitHub API 调试信息 ===');
+          console.log('API URL:', githubApiUrl);
+          console.log('文件名:', mdFileName);
+          console.log('标题:', title);
+          console.log('分类:', category);
+          console.log('Markdown 内容:', mdContent);
+          console.log('Base64 编码:', base64Content.substring(0, 100) + '...');
+          
+          const githubResponse = await fetch(githubApiUrl, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `token ${token}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify({
+              message: `添加新图片：${title}`,
+              content: base64Content
+            })
+          });
+
+          console.log('GitHub API 响应状态:', githubResponse.status);
+          
+          if (!githubResponse.ok) {
+            const errorText = await githubResponse.text();
+            console.error('GitHub API 错误响应:', errorText);
+            let errorMessage = `GitHub API错误 (${githubResponse.status})`;
+            try {
+              const errorJson = JSON.parse(errorText);
+              errorMessage += `: ${errorJson.message || errorText}`;
+              if (errorJson.errors) {
+                errorMessage += ` - ${JSON.stringify(errorJson.errors)}`;
+              }
+            } catch (e) {
+              errorMessage += `: ${errorText}`;
+            }
+            throw new Error(errorMessage);
+          }
+
+          const githubResult = await githubResponse.json();
+          console.log('GitHub API 成功:', githubResult);
+          
+          // 更新 index.html 中的 knownFiles 数组
+          try {
+            await updateIndexHtmlKnownFiles(mdFileName, folder);
+          } catch (e) {
+            console.error('更新 index.html 失败:', e);
+          }
+          
+          item.status = 'done';
+          successCount++;
+          
+        } catch (error) {
+          console.error('上传失败:', error);
+          item.status = 'error';
+          item.error = error.message;
+          failCount++;
+        }
+
+        // 更新进度
+        const progress = ((i + 1) / pendingFiles.length) * 100;
+        progressFill.style.width = `${progress}%`;
+        updateFileList();
+      }
+
+      // 显示结果
+      if (failCount === 0) {
+        result.className = "result success";
+        result.innerHTML = `✅ 全部上传成功！共 ${successCount} 个文件。<br>刷新前端页面即可看到新图片。<br><small style="color: #6b7280;">按 F12 打开开发者工具查看详细日志</small>`;
+      } else {
+        // 收集失败文件的错误信息
+        const failedFiles = pendingFiles.filter(f => f.status === 'error');
+        const errorDetails = failedFiles.map(f => 
+          `<div style="margin: 5px 0; padding: 5px; background: #fee; border-radius: 4px;">
+            <strong>${f.name}</strong><br>
+            <small>${f.error || '未知错误'}</small>
+          </div>`
+        ).join('');
+        
+        result.className = "result error";
+        result.innerHTML = `
+          ⚠️ 上传完成：成功 ${successCount} 个，失败 ${failCount} 个<br>
+          <details style="margin-top: 10px;">
+            <summary style="cursor: pointer; font-weight: bold;">查看失败详情</summary>
+            <div style="margin-top: 10px;">${errorDetails}</div>
+          </details>
+          <br><small style="color: #6b7280;">按 F12 打开开发者工具查看完整日志</small>
+        `;
+      }
+      
+      uploadBtn.disabled = false;
+    }
+
+    // 更新 index.html 中的 knownFiles 数组
+    async function updateIndexHtmlKnownFiles(fileName, folder) {
+      console.log('开始更新 index.html 中的 knownFiles 数组...');
+      
+      const token = document.getElementById('githubToken').value;
+      if (!token) {
+        console.error('没有 GitHub Token，无法更新 index.html');
+        return;
+      }
+      
+      // 1. 获取当前的 index.html 文件
+      const indexUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/index.html`;
+      console.log('获取 index.html:', indexUrl);
+      
+      const getResponse = await fetch(indexUrl, {
+        headers: {
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+      
+      if (!getResponse.ok) {
+        throw new Error(`获取 index.html 失败: ${getResponse.status}`);
+      }
+      
+      const fileData = await getResponse.json();
+      const currentContent = atob(fileData.content);
+      console.log('当前 index.html 内容长度:', currentContent.length);
+      
+      // 2. 更新 knownFiles 数组
+      let updatedContent;
+      const folderKey = `'${folder}'`;
+      
+      // 查找 knownFiles 中的对应数组
+      const regex = new RegExp(`(${folderKey}:\s*\[)([^\]]*)`, 's');
+      const match = currentContent.match(regex);
+      
+      if (match) {
+        console.log('找到 knownFiles 数组，开始更新...');
+        // 在数组中添加新文件名
+        const beforeArray = match[1];
+        const arrayContent = match[2];
+        
+        // 检查是否已存在
+        if (arrayContent.includes(fileName)) {
+          console.log('文件名已存在，无需更新');
+          return;
+        }
+        
+        // 在数组末尾添加新文件名
+        const newArrayContent = arrayContent.trim() 
+          ? `${arrayContent.trim()},\n          '${fileName}'`
+          : `'${fileName}'`;
+        
+        updatedContent = currentContent.replace(regex, `${beforeArray}${newArrayContent}`);
+        console.log('更新后的数组内容:', newArrayContent);
+      } else {
+        console.error('未找到 knownFiles 数组');
+        return;
+      }
+      
+      // 3. 提交更新后的 index.html
+      const updateResponse = await fetch(indexUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.github.v3+json'
+        },
+        body: JSON.stringify({
+          message: `自动更新 knownFiles: 添加 ${fileName}`,
+          content: btoa(unescape(encodeURIComponent(updatedContent))),
+          sha: fileData.sha
+        })
+      });
+      
+      if (!updateResponse.ok) {
+        const errorText = await updateResponse.text();
+        throw new Error(`更新 index.html 失败: ${updateResponse.status} - ${errorText}`);
+      }
+      
+      console.log('✅ index.html 更新成功！');
+    }
+
+    // 加载分类
+    function loadCategories() {
+      // 更新上传页面的分类类型选择
+      const typeSelect = document.getElementById('type');
+      typeSelect.innerHTML = Object.keys(categories).map(key => {
+        // 使用映射表获取中文名称
+        let name = categoryNames[key] || key;
+        return `<option value="${key}">${name}</option>`;
+      }).join('');
+      
+      // 更新子分类选择
+      updateSubCategories();
+
+      // 更新分类管理页面
+      updateCategoryLists();
+    }
+    
+    // 更新子分类选择
+    function updateSubCategories() {
+      const typeSelect = document.getElementById('type');
+      const categorySelect = document.getElementById('category');
+      const selectedType = typeSelect.value;
+      
+      categorySelect.innerHTML = categories[selectedType].map(cat => 
+        `<option value="${cat}">${cat}</option>`
+      ).join('');
+    }
+    
+    // 添加大分类
+    async function addMainCategory() {
+      const input = document.getElementById('newMainCategory');
+      const categoryName = input.value.trim();
+      
+      if (!categoryName) {
+        alert('请输入大分类名称');
+        return;
+      }
+      
+      // 生成有意义的 key（使用分类名称的拼音或英文）
+      let key = categoryName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      // 如果 key 为空或只包含连字符，使用默认值
+      if (!key || /^-+$/.test(key)) {
+        key = `category-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      }
+      
+      // 检查 key 是否已存在
+      if (categories[key]) {
+        alert('该大分类已存在');
+        return;
+      }
+      
+      // 获取 GitHub Token
+      const token = document.getElementById('githubToken').value.trim();
+      if (!token) {
+        alert('请先输入 GitHub Token！');
+        return;
+      }
+      
+      try {
+        // 在 GitHub 仓库中创建对应的目录
+        const folderName = `_${key}`;
+        const githubApiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folderName}`;
+        
+        // 创建一个空的 README.md 文件来创建目录
+        const readmeContent = `# ${categoryName}`;
+        const base64Content = btoa(unescape(encodeURIComponent(readmeContent)));
+        
+        const githubResponse = await fetch(githubApiUrl, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.github.v3+json'
+          },
+          body: JSON.stringify({
+            message: `创建大分类目录：${categoryName}`,
+            content: base64Content,
+            path: `${folderName}/README.md`
+          })
+        });
+        
+        if (!githubResponse.ok) {
+          const errorData = await githubResponse.json();
+          throw new Error(`创建目录失败: ${errorData.message}`);
+        }
+        
+        // 添加新的大分类
+        categories[key] = [];
+        // 保存大分类名称到映射表
+        categoryNames[key] = categoryName;
+        input.value = '';
+        
+        // 重新加载分类
+        loadCategories();
+        
+        alert('大分类添加成功！');
+      } catch (error) {
+        console.error('添加大分类失败:', error);
+        alert(`添加大分类失败: ${error.message}`);
+      }
+    }
+    
+    // 删除大分类
+    async function removeMainCategory(key) {
+      if (!confirm('确定要删除这个大分类吗？删除后将无法恢复！')) {
+        return;
+      }
+      
+      // 获取 GitHub Token
+      const token = document.getElementById('githubToken').value.trim();
+      if (!token) {
+        alert('请先输入 GitHub Token！');
+        return;
+      }
+      
+      try {
+        // 在 GitHub 仓库中删除对应的目录
+        const folderName = `_${key}`;
+        
+        // 先获取目录中的文件列表
+        const listUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folderName}`;
+        const listResponse = await fetch(listUrl, {
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        
+        if (listResponse.ok) {
+          const files = await listResponse.json();
+          
+          // 删除目录中的所有文件
+          for (const file of files) {
+            const deleteUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${file.path}`;
+            const deleteResponse = await fetch(deleteUrl, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json'
+              },
+              body: JSON.stringify({
+                message: `删除大分类文件：${file.name}`,
+                sha: file.sha
+              })
+            });
+            
+            if (!deleteResponse.ok) {
+              console.warn(`删除文件失败: ${file.name}`);
+              // 继续删除其他文件，不中断操作
+            }
+          }
+        } else {
+          console.warn(`目录不存在或无法访问: ${folderName}`);
+          // 继续执行，删除本地存储中的大分类信息
+        }
+        
+        // 从 categories 对象中删除对应的大分类
+        delete categories[key];
+        // 从 categoryNames 映射表中删除对应的大分类名称
+        delete categoryNames[key];
+        
+        // 重新加载分类
+        loadCategories();
+        
+        alert('大分类删除成功！');
+      } catch (error) {
+        console.error('删除大分类失败:', error);
+        
+        // 即使出现错误，也尝试删除本地存储中的大分类信息
+        try {
+          // 从 categories 对象中删除对应的大分类
+          delete categories[key];
+          // 从 categoryNames 映射表中删除对应的大分类名称
+          delete categoryNames[key];
+          
+          // 重新加载分类
+          loadCategories();
+          
+          alert('大分类删除成功！');
+        } catch (localError) {
+          console.error('删除本地大分类信息失败:', localError);
+          alert('删除大分类失败，请稍后重试。');
+        }
+      }
+    }
+
+    // 更新分类列表显示
+    function updateCategoryLists() {
+      const categoryManager = document.querySelector('.category-manager');
+      
+      // 保留添加大分类的区域
+      const addMainCategorySection = categoryManager.querySelector('div:first-child');
+      
+      // 清空其他内容
+      categoryManager.innerHTML = '';
+      categoryManager.appendChild(addMainCategorySection);
+      
+      // 动态生成所有大分类的子分类管理区域
+      Object.keys(categories).forEach(key => {
+        // 使用映射表获取中文名称
+        let name = categoryNames[key] || key;
+        
+        // 创建分类管理区域
+        const categorySection = document.createElement('div');
+        // 生成有效的输入框 ID（移除连字符并转换为驼峰命名）
+        const inputId = `new${key.replace(/-([a-z])/g, (g) => g[1].toUpperCase())}Category`;
+        categorySection.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3>${name}分类</h3>
+            ${key !== 'wallpaper' && key !== 'avatar' ? `<button onclick="removeMainCategory('${key}')" style="padding: 4px 8px; font-size: 12px; background-color: #ef4444; color: white; border: none; border-radius: 4px;">删除大分类</button>` : ''}
+          </div>
+          <div class="form-group">
+            <input type="text" id="${inputId}" placeholder="输入新分类名称">
+            <button onclick="addCategory('${key}')" style="margin-top: 10px;">添加分类</button>
+          </div>
+          <div class="category-list" id="${key}Categories"></div>
+        `;
+        categoryManager.appendChild(categorySection);
+        
+        // 更新子分类列表
+        const categoryList = categorySection.querySelector(`#${key}Categories`);
+        if (categories[key].length === 0) {
+          categoryList.innerHTML = '<p style="color: #6b7280; font-size: 14px;">暂无子分类</p>';
+        } else {
+          categoryList.innerHTML = categories[key].map((cat, index) => `
+            <div class="category-item">
+              <span>${cat}</span>
+              <button onclick="removeCategory('${key}', ${index})" style="width: auto; padding: 4px 8px; font-size: 12px;">删除</button>
+            </div>
+          `).join('');
+        }
+      });
+    }
+
+    // 添加分类
+    async function addCategory(type) {
+      // 生成有效的输入框 ID（移除连字符并转换为驼峰命名）
+      const inputId = `new${type.replace(/-([a-z])/g, (g) => g[1].toUpperCase())}Category`;
+      const input = document.getElementById(inputId);
+      const category = input.value.trim();
+
+      if (!category) {
+        alert('请输入分类名称');
+        return;
+      }
+
+      if (categories[type].includes(category)) {
+        alert('该分类已存在');
+        return;
+      }
+
+      // 获取 GitHub Token
+      const token = document.getElementById('githubToken').value.trim();
+      if (!token) {
+        alert('请先输入 GitHub Token！');
+        return;
+      }
+
+      try {
+        // 在 GitHub 仓库中创建对应的子分类目录
+        const folderName = `_${type}`;
+        // 生成唯一的子分类 key，添加时间戳以避免冲突
+        const timestamp = Date.now();
+        let subCategoryKey = category.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        // 如果 key 为空或只包含连字符，使用默认值
+        if (!subCategoryKey || /^-+$/.test(subCategoryKey)) {
+          subCategoryKey = `subcategory-${timestamp}`;
+        } else {
+          subCategoryKey = `${subCategoryKey}-${timestamp}`;
+        }
+        const subCategoryFolder = `${folderName}/${subCategoryKey}`;
+        const readmePath = `${subCategoryFolder}/README.md`;
+        const githubApiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${readmePath}`;
+        
+        // 创建一个空的 README.md 文件来创建目录
+        const readmeContent = `# ${category}`;
+        const base64Content = btoa(unescape(encodeURIComponent(readmeContent)));
+        
+        // 创建文件（不需要检查是否存在，因为我们添加了时间戳，确保路径唯一）
+        const githubResponse = await fetch(githubApiUrl, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.github.v3+json'
+          },
+          body: JSON.stringify({
+            message: `创建子分类目录：${category}`,
+            content: base64Content,
+            path: readmePath
+          })
+        });
+        
+        if (!githubResponse.ok) {
+          const errorData = await githubResponse.json();
+          throw new Error(`创建子分类目录失败: ${errorData.message}`);
+        }
+
+        categories[type].push(category);
+        input.value = '';
+        loadCategories();
+        
+        alert('分类添加成功！');
+      } catch (error) {
+        console.error('添加分类失败:', error);
+        alert(`添加分类失败: ${error.message}`);
+      }
+    }
+
+    // 删除分类
+    async function removeCategory(type, index) {
+      if (!confirm('确定要删除这个分类吗？')) {
+        return;
+      }
+      
+      const category = categories[type][index];
+      
+      // 获取 GitHub Token
+      const token = document.getElementById('githubToken').value.trim();
+      if (!token) {
+        alert('请先输入 GitHub Token！');
+        return;
+      }
+      
+      try {
+        // 在 GitHub 仓库中删除对应的子分类目录
+        const folderName = `_${type}`;
+        const subCategoryKey = category.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const subCategoryFolder = `${folderName}/${subCategoryKey}`;
+        
+        // 先获取子分类目录中的文件列表
+        const listUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${subCategoryFolder}`;
+        const listResponse = await fetch(listUrl, {
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        
+        if (listResponse.ok) {
+          const files = await listResponse.json();
+          
+          // 删除子分类目录中的所有文件
+          for (const file of files) {
+            const deleteUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${file.path}`;
+            const deleteResponse = await fetch(deleteUrl, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json'
+              },
+              body: JSON.stringify({
+                message: `删除子分类文件：${file.name}`,
+                sha: file.sha
+              })
+            });
+            
+            if (!deleteResponse.ok) {
+              console.warn(`删除文件失败: ${file.name}`);
+              // 继续删除其他文件，不中断操作
+            }
+          }
+        }
+
+        categories[type].splice(index, 1);
+        loadCategories();
+        
+        alert('分类删除成功！');
+      } catch (error) {
+        console.error('删除分类失败:', error);
+        
+        // 即使出现错误，也尝试删除本地存储中的分类信息
+        try {
+          categories[type].splice(index, 1);
+          loadCategories();
+          alert('分类删除成功！');
+        } catch (localError) {
+          console.error('删除本地分类信息失败:', localError);
+          alert('删除分类失败，请稍后重试。');
+        }
+      }
+    }
+
+    // 加载图片列表
+    async function loadImages() {
+      const grid = document.getElementById('imageGrid');
+      const filterSelect = document.getElementById('filterCategory');
+      
+      try {
+        // 从 GitHub API 获取文件列表
+        const categoryKeys = Object.keys(categories);
+        const fetchPromises = categoryKeys.map(key => 
+          fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/_${key}`)
+        );
+        
+        const responses = await Promise.all(fetchPromises);
+
+        let allImages = [];
+
+        // 处理每个大分类的响应
+        for (let i = 0; i < responses.length; i++) {
+          const res = responses[i];
+          const key = categoryKeys[i];
+          
+          if (res.ok) {
+            const files = await res.json();
+            for (const file of files) {
+              if (file.name.endsWith('.md')) {
+                try {
+                  const contentRes = await fetch(file.download_url);
+                  const content = await contentRes.text();
+                  const imageInfo = parseMarkdown(content);
+                  if (imageInfo) {
+                    imageInfo.type = key;
+                    imageInfo.fileName = file.name;
+                    allImages.push(imageInfo);
+                  }
+                } catch (e) {
+                  console.error('解析文件失败:', file.name);
+                }
+              }
+            }
+          }
+      }
+
+        // 更新分类筛选下拉框
+        const allCategories = [...new Set(allImages.map(img => img.category))];
+        filterSelect.innerHTML = '<option value="">全部分类</option>' + 
+          allCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+
+        // 显示图片
+        displayImages(allImages);
+
+      } catch (error) {
+        console.error('加载图片失败:', error);
+        grid.innerHTML = '<p style="color: #6b7280; text-align: center;">加载失败，请稍后重试</p>';
+      }
+    }
+
+    // 解析 Markdown
+    function parseMarkdown(content) {
+      const yamlMatch = content.match(/---([\s\S]*?)---/);
+      if (yamlMatch) {
+        const yamlContent = yamlMatch[1].trim();
+        const lines = yamlContent.split('\n');
+        const imageInfo = {};
+        
+        lines.forEach(line => {
+          const colonIndex = line.indexOf(':');
+          if (colonIndex > 0) {
+            const key = line.substring(0, colonIndex).trim();
+            let value = line.substring(colonIndex + 1).trim();
+            value = value.replace(/^["']|["']$/g, '');
+            imageInfo[key] = value;
+          }
+        });
+        
+        if (imageInfo.title && imageInfo.image) {
+          return {
+            title: imageInfo.title,
+            category: imageInfo.category || '未分类',
+            image: imageInfo.image
+          };
+        }
+      }
+      return null;
+    }
+
+    // 显示图片
+    function displayImages(images) {
+      const grid = document.getElementById('imageGrid');
+      
+      if (images.length === 0) {
+        grid.innerHTML = '<p style="color: #6b7280; text-align: center;">暂无图片</p>';
+        return;
+      }
+
+      grid.innerHTML = `
+        <div style="margin-bottom: 10px; display: flex; align-items: center;">
+          <input type="checkbox" id="selectAll" onclick="toggleSelectAll()" style="margin-right: 10px;">
+          <label for="selectAll">全选</label>
+          <button onclick="batchDeleteImages()" style="margin-left: 20px; padding: 5px 10px; background-color: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            批量删除
+          </button>
+        </div>
+        ${images.map(img => `
+          <div class="image-item">
+            <input type="checkbox" class="image-checkbox" data-type="${img.type}" data-filename="${img.fileName}" style="position: absolute; top: 5px; left: 5px; z-index: 1;">
+            <img src="${img.image}" alt="${img.title}" onerror="this.src='https://via.placeholder.com/150x100?text=加载失败'">
+            <div class="info">
+              <div style="font-weight: bold;">${img.title}</div>
+              <div style="color: #6b7280; font-size: 11px;">${img.category}</div>
+            </div>
+            <button class="delete-btn" onclick="deleteImage('${img.type}', '${img.fileName}')">×</button>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    // 全选/取消全选
+    function toggleSelectAll() {
+      const selectAll = document.getElementById('selectAll');
+      const checkboxes = document.querySelectorAll('.image-checkbox');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+      });
+    }
+
+    // 批量删除图片
+    async function batchDeleteImages() {
+      const checkboxes = document.querySelectorAll('.image-checkbox:checked');
+      if (checkboxes.length === 0) {
+        alert('请先选择要删除的图片');
+        return;
+      }
+
+      if (!confirm(`确定要删除选中的 ${checkboxes.length} 张图片吗？`)) {
+        return;
+      }
+
+      const token = document.getElementById('githubToken').value.trim();
+      if (!token) {
+        alert('请先输入 GitHub Token');
+        return;
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+
+      for (let i = 0; i < checkboxes.length; i++) {
+        const checkbox = checkboxes[i];
+        const type = checkbox.dataset.type;
+        const fileName = checkbox.dataset.filename;
+
+        try {
+          const folder = type === 'wallpaper' ? '_wallpaper' : '_avatar';
+          
+          // 先获取文件信息（需要sha值）
+          const getFileRes = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folder}/${fileName}`, {
+            headers: {
+              'Authorization': `token ${token}`
+            }
+          });
+          const fileInfo = await getFileRes.json();
+          
+          // 删除文件
+          const deleteRes = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folder}/${fileName}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `token ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              message: `删除图片: ${fileName}`,
+              sha: fileInfo.sha
+            })
+          });
+
+          if (deleteRes.ok) {
+            successCount++;
+          } else {
+            failCount++;
+            console.error('删除失败:', await deleteRes.text());
+          }
+        } catch (error) {
+          failCount++;
+          console.error('删除失败:', error);
+        }
+      }
+
+      alert(`删除完成！成功: ${successCount}, 失败: ${failCount}`);
+      loadImages(); // 重新加载图片列表
+    }
+
+    // 搜索图片
+    function searchImages() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      filterImages();
+    }
+
+    // 筛选图片
+    function filterImages() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const categoryFilter = document.getElementById('filterCategory').value;
+      
+      // 重新加载并筛选
+      loadImages().then(() => {
+        const grid = document.getElementById('imageGrid');
+        const items = grid.querySelectorAll('.image-item');
+        
+        items.forEach(item => {
+          const title = item.querySelector('.info div:first-child').textContent.toLowerCase();
+          const category = item.querySelector('.info div:last-child').textContent;
+          
+          const matchSearch = title.includes(searchTerm);
+          const matchCategory = !categoryFilter || category === categoryFilter;
+          
+          item.style.display = (matchSearch && matchCategory) ? 'block' : 'none';
+        });
+      });
+    }
+
+    // 删除图片
+    async function deleteImage(type, fileName) {
+      if (!confirm('确定要删除这张图片吗？')) {
+        return;
+      }
+
+      const token = document.getElementById('githubToken').value.trim();
+      if (!token) {
+        alert('请先输入 GitHub Token');
+        return;
+      }
+
+      try {
+        const folder = type === 'wallpaper' ? '_wallpaper' : '_avatar';
+        
+        // 先获取文件信息（需要sha值）
+        const getFileRes = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folder}/${fileName}`);
+        const fileInfo = await getFileRes.json();
+        
+        // 删除文件
+        const deleteRes = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folder}/${fileName}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: `删除图片：${fileName}`,
+            sha: fileInfo.sha
+          })
+        });
+
+        if (deleteRes.ok) {
+          alert('删除成功！');
+          loadImages();
+        } else {
+          const error = await deleteRes.json();
+          alert('删除失败：' + error.message);
+        }
+      } catch (error) {
+        alert('删除失败：' + error.message);
+      }
+    }
+
+  </script>
+</body>
+</html>
