@@ -262,7 +262,7 @@
   <script>
     const CONFIG = {
       IMAGES_PER_PAGE: 30,
-      CACHE_KEY: 'image-gallery-cache-v2',
+      CACHE_KEY: 'image-gallery-cache-v3',
       CACHE_DURATION: 30 * 60 * 1000,
       LAZY_LOAD_ROOT_MARGIN: '100px',
       THUMBNAIL_WIDTH: 400,
@@ -291,6 +291,52 @@
       'ying-shi-ming-xing': '影视明星',
       'bei-jing-su-cai': '背景素材'
     };
+
+    const requestQueue = [];
+    let activeRequests = 0;
+    const MAX_CONCURRENT_REQUESTS = 5;
+    const REQUEST_DELAY = 100;
+
+    async function throttledFetch(url, retries = 3) {
+      return new Promise((resolve, reject) => {
+        const execute = async () => {
+          activeRequests++;
+          try {
+            const response = await fetch(url);
+            if (!response.ok && response.status === 403) {
+              await new Promise(r => setTimeout(r, 1000));
+              if (retries > 0) {
+                activeRequests--;
+                resolve(throttledFetch(url, retries - 1));
+                return;
+              }
+            }
+            resolve(response);
+          } catch (e) {
+            if (retries > 0) {
+              await new Promise(r => setTimeout(r, 500));
+              activeRequests--;
+              resolve(throttledFetch(url, retries - 1));
+              return;
+            }
+            reject(e);
+          } finally {
+            activeRequests--;
+            processQueue();
+          }
+        };
+        
+        requestQueue.push(execute);
+        processQueue();
+      });
+    }
+
+    function processQueue() {
+      while (activeRequests < MAX_CONCURRENT_REQUESTS && requestQueue.length > 0) {
+        const next = requestQueue.shift();
+        setTimeout(next, REQUEST_DELAY);
+      }
+    }
 
     function getThumbnailUrl(url, width = CONFIG.THUMBNAIL_WIDTH) {
       if (!url) return url;
@@ -378,13 +424,13 @@
         return;
       }
       
-      content.innerHTML = `<div class="loading"><div class="loading-spinner"></div><span>正在加载图片...</span></div>`;
+      content.innerHTML = `<div class="loading"><div class="loading-spinner"></div><span id="loadingText">正在加载图片...</span></div>`;
       
       try {
         const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
-        const response = await fetch(apiUrl);
+        const response = await throttledFetch(apiUrl);
         
-        if (!response.ok) throw new Error(`API 请求失败: ${response.status}`);
+        if (!response || !response.ok) throw new Error(`API 请求失败: ${response?.status || '网络错误'}`);
         
         const contents = await response.json();
         const categoryDirs = contents.filter(item => item.type === 'dir' && item.name.startsWith('_'));
@@ -394,11 +440,14 @@
           if (!imageData[category]) imageData[category] = [];
         }
         
-        const loadPromises = categories.map(category => 
-          loadCategoryWithSubcategories(category, `_${category}`)
-        );
-        
-        await Promise.all(loadPromises);
+        for (let i = 0; i < categories.length; i++) {
+          const category = categories[i];
+          const loadingText = document.getElementById('loadingText');
+          if (loadingText) {
+            loadingText.textContent = `正在加载 ${categoryNames[category] || category} (${i + 1}/${categories.length})...`;
+          }
+          await loadCategoryWithSubcategories(category, `_${category}`);
+        }
         
         setCache({ imageData });
         loadNavigation(categories);
@@ -416,9 +465,9 @@
     async function loadCategoryWithSubcategories(category, folder, subCategoryName = null) {
       try {
         const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folder}`;
-        const response = await fetch(apiUrl);
+        const response = await throttledFetch(apiUrl);
         
-        if (!response.ok) return;
+        if (!response || !response.ok) return;
         
         const contents = await response.json();
         const files = contents.filter(item => item.type === 'file' && item.name.endsWith('.md'));
@@ -429,10 +478,13 @@
         const readmeFile = files.find(f => f.name.toLowerCase() === 'readme.md');
         if (readmeFile) {
           try {
-            const readmeContent = await fetch(readmeFile.download_url).then(r => r.text());
-            const titleMatch = readmeContent.match(/^#\s*(.+)$/m);
-            if (titleMatch) {
-              currentSubCategory = titleMatch[1].trim();
+            const readmeResponse = await throttledFetch(readmeFile.download_url);
+            if (readmeResponse && readmeResponse.ok) {
+              const readmeContent = await readmeResponse.text();
+              const titleMatch = readmeContent.match(/^#\s*(.+)$/m);
+              if (titleMatch) {
+                currentSubCategory = titleMatch[1].trim();
+              }
             }
           } catch (e) {
             console.warn('读取 README 失败:', folder);
@@ -441,26 +493,28 @@
         
         const imageFiles = files.filter(f => f.name.toLowerCase() !== 'readme.md');
         
-        const filePromises = imageFiles.map(async (item) => {
+        for (let i = 0; i < imageFiles.length; i++) {
+          const item = imageFiles[i];
           try {
-            const mdContent = await fetch(item.download_url).then(r => r.text());
-            const imageInfo = parseMarkdown(mdContent);
-            if (imageInfo) {
-              if (currentSubCategory && !subCategoryName) {
-                imageInfo.category = currentSubCategory;
+            const mdResponse = await throttledFetch(item.download_url);
+            if (mdResponse && mdResponse.ok) {
+              const mdContent = await mdResponse.text();
+              const imageInfo = parseMarkdown(mdContent);
+              if (imageInfo) {
+                if (currentSubCategory && !subCategoryName) {
+                  imageInfo.category = currentSubCategory;
+                }
+                imageData[category].push(imageInfo);
               }
-              imageData[category].push(imageInfo);
             }
           } catch (e) {
             console.warn('加载文件失败:', item.name);
           }
-        });
+        }
         
-        const dirPromises = subdirs.map(item => 
-          loadCategoryWithSubcategories(category, `${folder}/${item.name}`, currentSubCategory)
-        );
-        
-        await Promise.all([...filePromises, ...dirPromises]);
+        for (const item of subdirs) {
+          await loadCategoryWithSubcategories(category, `${folder}/${item.name}`, currentSubCategory);
+        }
       } catch (e) {
         console.warn('加载分类失败:', folder);
       }
