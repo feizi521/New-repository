@@ -1,9 +1,0 @@
-{
-  "name": "image-gallery",
-  "compatibility_date": "2024-01-01",
-  "pages_build_output_dir": ".",
-  "vars": {
-    "SITE_URL": "https://image-gallery-cxr.pages.dev",
-    "ENVIRONMENT": "production"
-  }
-}
