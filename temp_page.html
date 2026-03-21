@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -1002,30 +1002,39 @@
       
       const pageButtons = generatePageButtons(info.currentPage, info.totalPages);
       
-      let buttonsHtml = '';
-      buttonsHtml += `<button onclick="goToPage(1)" ${info.currentPage === 1 ? 'disabled' : ''}>首页</button>`;
-      buttonsHtml += `<button onclick="goToPage(${info.currentPage - 1})" ${!info.hasPrevPage ? 'disabled' : ''}>上一页</button>`;
-      
-      pageButtons.forEach(p => {
-        if (p === '...') {
-          buttonsHtml += `<button disabled>...</button>`;
-        } else {
-          buttonsHtml += `<button class="${p === info.currentPage ? 'active' : ''}" onclick="goToPage(${p})">${p}</button>`;
-        }
-      });
-      
-      buttonsHtml += `<button onclick="goToPage(${info.currentPage + 1})" ${!info.hasNextPage ? 'disabled' : ''}>下一页</button>`;
-      buttonsHtml += `<button onclick="goToPage(${info.totalPages})" ${info.currentPage === info.totalPages ? 'disabled' : ''}>末页</button>`;
-      
-      buttonsHtml += `
+      pagination.innerHTML = `
+        <button onclick="goToPage(1)" ${info.currentPage === 1 ? 'disabled' : ''}>首页</button>
+        <button onclick="goToPage(${info.currentPage - 1})" ${!info.hasPrevPage ? 'disabled' : ''}>上一页</button>
+        
+        ${pageButtons.map(p => `
+          <button 
+            class="${p === info.currentPage ? 'active' : ''}" 
+            onclick="goToPage(${p})"
+            ${p === '...' ? 'disabled' : ''}
+          >
+            ${p}
+          </button>
+        `).join('')}
+        
+        <button onclick="goToPage(${info.currentPage + 1})" ${!info.hasNextPage ? 'disabled' : ''}>下一页</button>
+        <button onclick="goToPage(${info.totalPages})" ${info.currentPage === info.totalPages ? 'disabled' : ''}>末页</button>
+        
         <div class="page-jump">
-          <input type="number" min="1" max="${info.totalPages}" value="${info.currentPage}" onkeypress="handlePageJump(event, ${info.totalPages})" id="pageJumpInput">
+          <input 
+            type="number" 
+            min="1" 
+            max="${info.totalPages}" 
+            value="${info.currentPage}"
+            onkeypress="handlePageJump(event, ${info.totalPages})"
+            id="pageJumpInput"
+          >
           <button onclick="jumpToPage(${info.totalPages})">跳转</button>
         </div>
-        <span class="pagination-info">第 ${info.currentPage}/${info.totalPages} 页，共 ${info.totalImages} 张</span>
+        
+        <span class="pagination-info">
+          第 ${info.currentPage}/${info.totalPages} 页，共 ${info.totalImages} 张
+        </span>
       `;
-      
-      pagination.innerHTML = buttonsHtml;
     }
 
     /* ==================== 分页加载状态 ==================== */
@@ -1228,3 +1237,4 @@
   </script>
 </body>
 </html>
+
