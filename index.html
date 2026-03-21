@@ -484,12 +484,22 @@
       const content = document.getElementById('content');
       const items = imageData[currentType] || [];
       
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      
+      const subCategoryMap = {};
+      items.forEach(item => {
+        const cat = item.category || '未分类';
+        if (!subCategoryMap[cat]) subCategoryMap[cat] = [];
+        if (!search || item.title.toLowerCase().includes(search)) {
+          subCategoryMap[cat].push(item);
+        }
+      });
+      
       let filteredItems = items;
       if (currentSubCategory !== '全部') {
-        filteredItems = items.filter(item => item.category === currentSubCategory);
+        filteredItems = items.filter(item => (item.category || '未分类') === currentSubCategory);
       }
       
-      const search = document.getElementById('searchInput').value.toLowerCase();
       if (search) {
         filteredItems = filteredItems.filter(item => 
           item.title.toLowerCase().includes(search)
@@ -498,21 +508,23 @@
       
       currentImages = filteredItems;
       
-      const subCategories = ['全部', ...new Set(items.map(i => i.category))];
+      const subCategories = ['全部', ...Object.keys(subCategoryMap)];
       const totalPages = Math.ceil(filteredItems.length / CONFIG.IMAGES_PER_PAGE);
       const startIndex = (currentPage - 1) * CONFIG.IMAGES_PER_PAGE;
       const endIndex = startIndex + CONFIG.IMAGES_PER_PAGE;
       const pageItems = filteredItems.slice(startIndex, endIndex);
       
       const categoryName = categoryNames[currentType] || currentType;
+      const totalInCategory = items.length;
       
       let html = `
         <div class="category">
-          <h2>${categoryName} <span style="font-size: 14px; color: #6b7280; font-weight: normal;">(共 ${filteredItems.length} 张)</span></h2>
+          <h2>${categoryName} <span style="font-size: 14px; color: #6b7280; font-weight: normal;">(共 ${totalInCategory} 张${currentSubCategory !== '全部' ? '，当前分类 ' + filteredItems.length + ' 张' : ''})</span></h2>
           <div class="sub-categories">
-            ${subCategories.map(cat => 
-              `<button class="${cat === currentSubCategory ? 'active' : ''}" onclick="filterSubCategory('${cat}')">${cat}</button>`
-            ).join('')}
+            ${subCategories.map(cat => {
+              const count = cat === '全部' ? items.length : (subCategoryMap[cat]?.length || 0);
+              return `<button class="${cat === currentSubCategory ? 'active' : ''}" onclick="filterSubCategory('${cat}')">${cat} (${count})</button>`;
+            }).join('')}
           </div>
           <div class="grid">
             ${pageItems.map((item, idx) => `
