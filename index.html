@@ -262,7 +262,7 @@
   <script>
     const CONFIG = {
       IMAGES_PER_PAGE: 30,
-      CACHE_KEY: 'image-gallery-cache-v1',
+      CACHE_KEY: 'image-gallery-cache-v2',
       CACHE_DURATION: 30 * 60 * 1000,
       LAZY_LOAD_ROOT_MARGIN: '100px',
       THUMBNAIL_WIDTH: 400,
@@ -413,7 +413,7 @@
       }
     }
 
-    async function loadCategoryWithSubcategories(category, folder) {
+    async function loadCategoryWithSubcategories(category, folder, subCategoryName = null) {
       try {
         const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folder}`;
         const response = await fetch(apiUrl);
@@ -421,21 +421,43 @@
         if (!response.ok) return;
         
         const contents = await response.json();
-        const files = contents.filter(item => item.type === 'file' && item.name.endsWith('.md') && item.name.toLowerCase() !== 'readme.md');
+        const files = contents.filter(item => item.type === 'file' && item.name.endsWith('.md'));
         const subdirs = contents.filter(item => item.type === 'dir');
         
-        const filePromises = files.map(async (item) => {
+        let currentSubCategory = subCategoryName;
+        
+        const readmeFile = files.find(f => f.name.toLowerCase() === 'readme.md');
+        if (readmeFile) {
+          try {
+            const readmeContent = await fetch(readmeFile.download_url).then(r => r.text());
+            const titleMatch = readmeContent.match(/^#\s*(.+)$/m);
+            if (titleMatch) {
+              currentSubCategory = titleMatch[1].trim();
+            }
+          } catch (e) {
+            console.warn('读取 README 失败:', folder);
+          }
+        }
+        
+        const imageFiles = files.filter(f => f.name.toLowerCase() !== 'readme.md');
+        
+        const filePromises = imageFiles.map(async (item) => {
           try {
             const mdContent = await fetch(item.download_url).then(r => r.text());
             const imageInfo = parseMarkdown(mdContent);
-            if (imageInfo) imageData[category].push(imageInfo);
+            if (imageInfo) {
+              if (currentSubCategory && !subCategoryName) {
+                imageInfo.category = currentSubCategory;
+              }
+              imageData[category].push(imageInfo);
+            }
           } catch (e) {
             console.warn('加载文件失败:', item.name);
           }
         });
         
         const dirPromises = subdirs.map(item => 
-          loadCategoryWithSubcategories(category, `${folder}/${item.name}`)
+          loadCategoryWithSubcategories(category, `${folder}/${item.name}`, currentSubCategory)
         );
         
         await Promise.all([...filePromises, ...dirPromises]);
