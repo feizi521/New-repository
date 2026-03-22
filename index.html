@@ -591,7 +591,7 @@
       nav.innerHTML = categories.map(category => {
         const name = categoryNames[category] || category;
         const count = imageData[category]?.length || 0;
-        return `<button class="${category === currentType ? 'active' : ''}" onclick="showCategory('${category}')">${name} (${count})</button>`;
+        return `<button class="${category === currentType ? 'active' : ''}" onclick="showCategory('${category}', this)">${name} (${count})</button>`;
       }).join('');
     }
 
@@ -642,7 +642,7 @@
           <div class="sub-categories">
             ${subCategories.map(cat => {
               const count = cat === '全部' ? items.length : (subCategoryMap[cat]?.length || 0);
-              return `<button class="${cat === currentSubCategory ? 'active' : ''}" onclick="filterSubCategory('${cat}')">${cat} (${count})</button>`;
+              return `<button class="${cat === currentSubCategory ? 'active' : ''}" onclick="filterSubCategory('${cat}', this)">${cat} (${count})</button>`;
             }).join('')}
           </div>
           <div class="grid">
@@ -710,20 +710,20 @@
       }
     }
 
-    function showCategory(type) {
+    function showCategory(type, btn) {
       currentType = type;
       currentSubCategory = '全部';
       currentPage = 1;
       document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
+      if (btn) btn.classList.add('active');
       render();
     }
 
-    function filterSubCategory(category) {
+    function filterSubCategory(category, btn) {
       currentSubCategory = category;
       currentPage = 1;
       document.querySelectorAll('.sub-categories button').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
+      if (btn) btn.classList.add('active');
       render();
     }
 
