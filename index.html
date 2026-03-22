@@ -446,6 +446,34 @@
     <span class="header-stats" id="headerStats"></span>
   </div>
   
+  <!-- 面包屑导航 -->
+  <div class="breadcrumb" id="breadcrumb">
+    <a href="/">首页</a>
+    <span class="separator">/</span>
+    <span id="breadcrumbCategory">个性头像</span>
+    <span class="separator" id="breadcrumbSubCategorySeparator" style="display: none;">/</span>
+    <span id="breadcrumbSubCategory" style="display: none;"></span>
+  </div>
+  
+  <style>
+    .breadcrumb {
+      margin: 16px 0;
+      font-size: 14px;
+      color: #6b7280;
+    }
+    .breadcrumb a {
+      color: #667eea;
+      text-decoration: none;
+    }
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+    .breadcrumb .separator {
+      margin: 0 8px;
+      color: #d1d5db;
+    }
+  </style>
+  
   <div class="nav" id="nav"></div>
   
   <div class="search-container">
@@ -724,6 +752,17 @@
       
       const categoryName = categoryNames[currentType] || currentType;
       const totalInCategory = items.length;
+      
+      // 更新面包屑导航
+      document.getElementById('breadcrumbCategory').textContent = categoryName;
+      if (currentSubCategory !== '全部') {
+        document.getElementById('breadcrumbSubCategory').textContent = currentSubCategory;
+        document.getElementById('breadcrumbSubCategory').style.display = 'inline';
+        document.getElementById('breadcrumbSubCategorySeparator').style.display = 'inline';
+      } else {
+        document.getElementById('breadcrumbSubCategory').style.display = 'none';
+        document.getElementById('breadcrumbSubCategorySeparator').style.display = 'none';
+      }
       
       let html = `
         <div class="category">
