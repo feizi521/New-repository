@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /data/
+Disallow: /scripts/
+
+Sitemap: https://tuj.farholme.com/sitemap.xml
