@@ -31,9 +31,16 @@ function parseMarkdown(content) {
     });
     
     if (imageInfo.image) {
+      // 解析标签，支持逗号分隔的多个标签
+      let tags = [];
+      if (imageInfo.tags) {
+        tags = imageInfo.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+      }
+      
       return {
         title: imageInfo.title || '无标题',
         category: imageInfo.category || '未分类',
+        tags: tags,
         image: imageInfo.image
       };
     }

@@ -605,9 +605,11 @@
       items.forEach(item => {
         const cat = item.category || '未分类';
         if (!subCategoryMap[cat]) subCategoryMap[cat] = [];
+        const tags = item.tags || [];
         const matchesSearch = !search || 
           (item.title && item.title.toLowerCase().includes(search)) ||
           (cat && cat.toLowerCase().includes(search)) ||
+          (tags.some(tag => tag.toLowerCase().includes(search))) ||
           (item.image && item.image.toLowerCase().includes(search));
         if (matchesSearch) {
           subCategoryMap[cat].push(item);
@@ -622,9 +624,11 @@
       if (search) {
         filteredItems = filteredItems.filter(item => {
           const cat = item.category || '未分类';
+          const tags = item.tags || [];
           return (
             (item.title && item.title.toLowerCase().includes(search)) ||
             (cat && cat.toLowerCase().includes(search)) ||
+            (tags.some(tag => tag.toLowerCase().includes(search))) ||
             (item.image && item.image.toLowerCase().includes(search))
           );
         });
