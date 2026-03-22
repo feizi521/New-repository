@@ -10,55 +10,129 @@
   
   <!-- 分类页面 -->
   <url>
-    <loc>https://tuj.farholme.com/?type=avatar</loc>
+    <loc>https://tuji.farholme.com/?type=avatar</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <!-- 个性头像子分类 -->
   <url>
-    <loc>https://tuj.farholme.com/?type=wallpaper</loc>
-    <lastmod>2026-03-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tuj.farholme.com/?type=people</loc>
-    <lastmod>2026-03-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tuj.farholme.com/?type=scenery</loc>
-    <lastmod>2026-03-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tuj.farholme.com/?type=wei-mei-zhi-yu</loc>
+    <loc>https://tuji.farholme.com/?type=avatar&category=卡通</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://tuj.farholme.com/?type=dong-man-cha-hua</loc>
+    <loc>https://tuji.farholme.com/?type=avatar&category=写实</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://tuj.farholme.com/?type=wen-zi-yu-lu</loc>
+    <loc>https://tuji.farholme.com/?type=avatar&category=情侣头像</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://tuj.farholme.com/?type=ying-shi-ming-xing</loc>
+    <loc>https://tuji.farholme.com/?type=avatar&category=搞怪头像</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://tuj.farholme.com/?type=bei-jing-su-cai</loc>
+    <loc>https://tuji.farholme.com/?type=avatar&category=中性头像</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tuji.farholme.com/?type=avatar&category=动漫头像</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tuji.farholme.com/?type=wallpaper</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://tuji.farholme.com/?type=people</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- 人物子分类 -->
+  <url>
+    <loc>https://tuji.farholme.com/?type=people&category=美女</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tuji.farholme.com/?type=people&category=帅哥</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tuji.farholme.com/?type=people&category=亚洲美女</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tuji.farholme.com/?type=people&category=港风</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tuji.farholme.com/?type=people&category=复古</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tuji.farholme.com/?type=people&category=中风</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tuji.farholme.com/?type=scenery</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://tuji.farholme.com/?type=wei-mei-zhi-yu</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tuji.farholme.com/?type=dong-man-cha-hua</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tuji.farholme.com/?type=wen-zi-yu-lu</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tuji.farholme.com/?type=ying-shi-ming-xing</loc>
+    <lastmod>2026-03-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tuji.farholme.com/?type=bei-jing-su-cai</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
