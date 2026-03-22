@@ -30,6 +30,18 @@
     }
   }
   </script>
+  
+  <!-- 社交媒体元标签 -->
+  <meta property="og:title" content="高清图片素材库 - 免费壁纸、头像、人物、风景图片下载">
+  <meta property="og:description" content="提供海量高清图片素材，包括壁纸、头像、人物、风景、动漫插画等分类，支持免费下载和搜索，为您的设计和创作提供灵感。">
+  <meta property="og:url" content="https://tuji.farholme.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://tuji.farholme.com/">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="高清图片素材库 - 免费壁纸、头像、人物、风景图片下载">
+  <meta name="twitter:description" content="提供海量高清图片素材，包括壁纸、头像、人物、风景、动漫插画等分类，支持免费下载和搜索，为您的设计和创作提供灵感。">
+  <meta name="twitter:image" content="https://tuji.farholme.com/">
   <script>
     if (window.location.protocol === 'http:') {
       window.location.href = window.location.href.replace('http:', 'https:');
@@ -686,7 +698,7 @@
             ${pageItems.map((item, idx) => `
               <div class="card" onclick="openModal(${startIndex + idx})">
                 <div class="card-image-container">
-                  <img data-src="${getThumbnailUrl(item.image)}" data-original="${item.image}" alt="${item.title}" loading="lazy">
+                  <img data-src="${getThumbnailUrl(item.image)}" data-original="${item.image}" alt="${item.title} - ${item.category || '未分类'}${item.tags && item.tags.length > 0 ? ' - ' + item.tags.join(' ') : ''}" loading="lazy">
                 </div>
                 <div class="title">${item.title}</div>
               </div>
@@ -781,6 +793,7 @@
       const modalTitle = document.getElementById('modalTitle');
       
       modalImage.src = img.image;
+      modalImage.alt = `${img.title} - ${img.category || '未分类'}${img.tags && img.tags.length > 0 ? ' - ' + img.tags.join(' ') : ''}`;
       modalTitle.textContent = img.title;
       modal.classList.add('show');
       document.body.style.overflow = 'hidden';
