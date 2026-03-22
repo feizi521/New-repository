@@ -486,6 +486,28 @@
     let lazyObserver = null;
     let totalImages = 0;
 
+    // 从URL获取参数
+    function getUrlParams() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        type: params.get('type') || 'avatar',
+        category: params.get('category') || '全部',
+        image: params.get('image') || null,
+        page: parseInt(params.get('page')) || 1
+      };
+    }
+
+    // 更新URL参数
+    function updateUrlParams() {
+      const params = new URLSearchParams();
+      if (currentType) params.set('type', currentType);
+      if (currentSubCategory && currentSubCategory !== '全部') params.set('category', currentSubCategory);
+      if (currentPage > 1) params.set('page', currentPage);
+      
+      const newUrl = `${window.location.origin}${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+      window.history.replaceState({}, '', newUrl);
+    }
+
     function getThumbnailUrl(url, width = CONFIG.THUMBNAIL_WIDTH) {
       if (!url) return url;
       try {
@@ -610,16 +632,39 @@
         return;
       }
       
-      if (!currentType || !imageData[currentType]) {
+      // 处理URL参数
+      const params = getUrlParams();
+      if (params.type && imageData[params.type]) {
+        currentType = params.type;
+      } else if (!currentType || !imageData[currentType]) {
         currentType = categories[0];
+      }
+      
+      if (params.category) {
+        currentSubCategory = params.category;
+      }
+      
+      if (params.page) {
+        currentPage = params.page;
       }
       
       document.getElementById('headerStats').textContent = `共 ${totalImages.toLocaleString()} 张图片`;
       
       loadNavigation(categories);
       render();
+      updateUrlParams();
       
       document.getElementById('searchInput').addEventListener('input', handleSearch);
+      
+      // 如果有图片ID参数，打开模态框
+      if (params.image) {
+        setTimeout(() => {
+          const imageIndex = currentImages.findIndex(img => img.id === params.image);
+          if (imageIndex !== -1) {
+            openModal(imageIndex);
+          }
+        }, 500);
+      }
     }
 
     function loadNavigation(categories) {
@@ -748,6 +793,7 @@
       if (page < 1 || page > totalPages) return;
       currentPage = page;
       render();
+      updateUrlParams();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -766,6 +812,7 @@
       document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
       render();
+      updateUrlParams();
     }
 
     function filterSubCategory(category, btn) {
@@ -774,6 +821,7 @@
       document.querySelectorAll('.sub-categories button').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
       render();
+      updateUrlParams();
     }
 
     function handleSearch() {
@@ -797,11 +845,23 @@
       modalTitle.textContent = img.title;
       modal.classList.add('show');
       document.body.style.overflow = 'hidden';
+      
+      // 更新URL添加图片ID参数
+      const params = new URLSearchParams(window.location.search);
+      params.set('image', img.id);
+      const newUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+      window.history.pushState({}, '', newUrl);
     }
 
     function closeModal() {
       document.getElementById('imageModal').classList.remove('show');
       document.body.style.overflow = '';
+      
+      // 移除URL中的图片ID参数
+      const params = new URLSearchParams(window.location.search);
+      params.delete('image');
+      const newUrl = `${window.location.origin}${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+      window.history.pushState({}, '', newUrl);
     }
 
     function prevImage() {
@@ -809,6 +869,12 @@
       const img = currentImages[currentImageIndex];
       document.getElementById('modalImage').src = img.image;
       document.getElementById('modalTitle').textContent = img.title;
+      
+      // 更新URL中的图片ID参数
+      const params = new URLSearchParams(window.location.search);
+      params.set('image', img.id);
+      const newUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+      window.history.pushState({}, '', newUrl);
     }
 
     function nextImage() {
@@ -816,6 +882,12 @@
       const img = currentImages[currentImageIndex];
       document.getElementById('modalImage').src = img.image;
       document.getElementById('modalTitle').textContent = img.title;
+      
+      // 更新URL中的图片ID参数
+      const params = new URLSearchParams(window.location.search);
+      params.set('image', img.id);
+      const newUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+      window.history.pushState({}, '', newUrl);
     }
 
     document.addEventListener('DOMContentLoaded', loadData);

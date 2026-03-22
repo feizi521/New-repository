@@ -15,7 +15,7 @@ const categoryNames = {
   'bei-jing-su-cai': '背景素材'
 };
 
-function parseMarkdown(content) {
+function parseMarkdown(content, filePath) {
   const yamlMatch = content.match(/---([\s\S]*?)---/);
   if (yamlMatch) {
     const lines = yamlMatch[1].trim().split('\n');
@@ -37,7 +37,11 @@ function parseMarkdown(content) {
         tags = imageInfo.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
       }
       
+      // 生成唯一ID（基于文件名或时间戳）
+      const id = path.basename(filePath, '.md');
+      
       return {
+        id: id,
         title: imageInfo.title || '无标题',
         category: imageInfo.category || '未分类',
         tags: tags,
@@ -78,19 +82,19 @@ function scanDirectory(dir, parentSubCategoryName = null) {
       // Pass current folder's subcategory to subfolders (they can override with their own README)
       results.push(...scanDirectory(fullPath, currentSubCategory));
     } else if (item.endsWith('.md') && item.toLowerCase() !== 'readme.md') {
-      const content = fs.readFileSync(fullPath, 'utf-8');
-      const imageInfo = parseMarkdown(content);
-      if (imageInfo) {
-        // Priority: 1. YAML category, 2. Folder README subcategory, 3. Parent subcategory
-        // Only override YAML category if folder has its own README.md (explicit subcategory)
-        if (folderSubCategory && !imageInfo.category) {
-          imageInfo.category = folderSubCategory;
-        } else if (!imageInfo.category && currentSubCategory) {
-          imageInfo.category = currentSubCategory;
+          const content = fs.readFileSync(fullPath, 'utf-8');
+          const imageInfo = parseMarkdown(content, fullPath);
+          if (imageInfo) {
+            // Priority: 1. YAML category, 2. Folder README subcategory, 3. Parent subcategory
+            // Only override YAML category if folder has its own README.md (explicit subcategory)
+            if (folderSubCategory && !imageInfo.category) {
+              imageInfo.category = folderSubCategory;
+            } else if (!imageInfo.category && currentSubCategory) {
+              imageInfo.category = currentSubCategory;
+            }
+            results.push(imageInfo);
+          }
         }
-        results.push(imageInfo);
-      }
-    }
   }
   
   return results;
