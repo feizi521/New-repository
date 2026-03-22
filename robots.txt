@@ -3,4 +3,4 @@ Allow: /
 Disallow: /data/
 Disallow: /scripts/
 
-Sitemap: https://tuj.farholme.com/sitemap.xml
+Sitemap: https://tuji.farholme.com/sitemap.xml
