@@ -1,7 +1,7 @@
 {
-  "name": "高清图片素材库",
-  "short_name": "图片库",
-  "description": "提供海量高清图片素材，包括壁纸、头像、人物、风景、美女、动漫插画等分类",
+  "name": "小狐狸图片站",
+  "short_name": "小狐狸图片",
+  "description": "小狐狸图片站提供海量高清图片素材，包括壁纸、头像、人物、风景、美女、动漫插画等分类",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f9fafb",
