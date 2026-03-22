@@ -676,7 +676,7 @@
         currentPage = params.page;
       }
       
-      document.getElementById('headerStats').textContent = `共 ${totalImages.toLocaleString()} 张图片`;
+      document.getElementById('headerStats').textContent = '';
       
       loadNavigation(categories);
       render();
@@ -699,8 +699,7 @@
       const nav = document.getElementById('nav');
       nav.innerHTML = categories.map(category => {
         const name = categoryNames[category] || category;
-        const count = imageData[category]?.length || 0;
-        return `<button class="${category === currentType ? 'active' : ''}" onclick="showCategory('${category}', this)">${name} (${count})</button>`;
+        return `<button class="${category === currentType ? 'active' : ''}" onclick="showCategory('${category}', this)">${name}</button>`;
       }).join('');
     }
 
@@ -768,14 +767,10 @@
         <div class="category">
           <div class="category-header">
             <h2>${categoryName}</h2>
-            <span class="category-stats">
-              共 ${totalInCategory.toLocaleString()} 张${currentSubCategory !== '全部' ? '，当前显示 ' + filteredItems.length.toLocaleString() + ' 张' : ''}
-            </span>
           </div>
           <div class="sub-categories">
             ${subCategories.map(cat => {
-              const count = cat === '全部' ? items.length : (subCategoryMap[cat]?.length || 0);
-              return `<button class="${cat === currentSubCategory ? 'active' : ''}" onclick="filterSubCategory('${cat}', this)">${cat} (${count})</button>`;
+              return `<button class="${cat === currentSubCategory ? 'active' : ''}" onclick="filterSubCategory('${cat}', this)">${cat}</button>`;
             }).join('')}
           </div>
           <div class="grid">
