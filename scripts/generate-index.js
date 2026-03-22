@@ -51,27 +51,34 @@ function getSubCategoryName(folderPath) {
   return null;
 }
 
-function scanDirectory(dir, subCategoryName = null) {
+function scanDirectory(dir, parentSubCategoryName = null) {
   const results = [];
   
   if (!fs.existsSync(dir)) return results;
   
   const items = fs.readdirSync(dir);
   
-  // Check for README.md to get subcategory name
-  const currentSubCategory = getSubCategoryName(dir) || subCategoryName;
+  // Check for README.md to get subcategory name for current folder
+  const folderSubCategory = getSubCategoryName(dir);
+  // Use current folder's subcategory if available, otherwise inherit from parent
+  const currentSubCategory = folderSubCategory || parentSubCategoryName;
   
   for (const item of items) {
     const fullPath = path.join(dir, item);
     const stat = fs.statSync(fullPath);
     
     if (stat.isDirectory()) {
+      // Pass current folder's subcategory to subfolders (they can override with their own README)
       results.push(...scanDirectory(fullPath, currentSubCategory));
     } else if (item.endsWith('.md') && item.toLowerCase() !== 'readme.md') {
       const content = fs.readFileSync(fullPath, 'utf-8');
       const imageInfo = parseMarkdown(content);
       if (imageInfo) {
-        if (currentSubCategory) {
+        // Priority: 1. YAML category, 2. Folder README subcategory, 3. Parent subcategory
+        // Only override YAML category if folder has its own README.md (explicit subcategory)
+        if (folderSubCategory && !imageInfo.category) {
+          imageInfo.category = folderSubCategory;
+        } else if (!imageInfo.category && currentSubCategory) {
           imageInfo.category = currentSubCategory;
         }
         results.push(imageInfo);
